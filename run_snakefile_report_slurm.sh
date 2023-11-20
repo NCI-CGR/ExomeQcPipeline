@@ -6,7 +6,7 @@ DATE=$(date +%y%m%d)
 mkdir -p logs_${DATE}
 
 
-snakemake --unlock  
+snakemake --unlock -s Snakefile_slurm --configfile modules_slurm/config.yaml
 
 sbcmd="sbatch --time=8:00:00 --mem=64g --cpus-per-task={threads} --output=logs_${DATE}/snakejob_%j.out"
 
@@ -16,4 +16,4 @@ echo "module load python3/3.10.2 singularity slurm R; snakemake -pr -s Snakefile
 
 #qsub -cwd -q all.q -N run_Snakefile  -o logs_${DATE}/Snakefile.stdout -e logs_${DATE}/Snakefile.stderr -b y "module load python3 sge R/3.4.3 gcc zlib;snakemake -pr --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules/config.yaml --cluster \"$sbcmd\" --cluster-config cluster.yaml --latency-wait 120 all"
 
-
+sbatch --output=logs_${DATE}/run_snakefile_slurm.out --error=logs_${DATE}/run_snakefile_slurm.err logs_${DATE}/run_snakefile_slurm.sbatch

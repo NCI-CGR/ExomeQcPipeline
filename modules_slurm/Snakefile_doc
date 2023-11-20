@@ -235,16 +235,16 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     body_add_flextable(value = ft_1) %>%
     
     cursor_reach(keyword = "Figure 1. subject level duplication rate by number of lanes") %>%
-    slip_in_img(src = "''' + input.subject_dup_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.subject_dup_plot + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "residual duplication rate after lane dup removed.") %>%
     body_add_flextable(value = ft_2) %>%
     cursor_reach(keyword = "Figure 2. sorted contamination rate by subjects") %>%
-    slip_in_img(src = "''' + input.contamination_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.contamination_plot + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Table 3.  10 samples with highest contamination rate") %>%
     body_add_flextable(value = ft_3) %>%
 
     cursor_reach(keyword = "Figure 3. coverage scatter plot for all exome samples, with cases and controls separated") %>%
-    slip_in_img(src = "''' + input.aveCov_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.aveCov_plot + '''", width = 5, height = 5, pos = "before") %>%
     '''
         if not config['MODE'] == 'wgs':           
             rTxt += '''           
@@ -254,65 +254,65 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     body_add_flextable(value = ft_4b) %>%
         
     cursor_reach(keyword = "Figure 4. the histogram of UE score and CCS Score for all sample") %>%
-    slip_in_img(src = "''' + input.ccs_plot + '''", width = 2.5, height = 2.5, pos = "before") %>%
-    slip_in_img(src = "''' + input.ue_plot + '''", width = 2.5, height = 2.5, pos = "before") %>%
+    body_add_img(src = "''' + input.ccs_plot + '''", width = 2.5, height = 2.5, pos = "before") %>%
+    body_add_img(src = "''' + input.ue_plot + '''", width = 2.5, height = 2.5, pos = "before") %>%
     cursor_reach(keyword = "Table 5.  10 regions with highest Unevenness Score") %>%
     body_add_flextable(value = ft_5) %>%
     
     cursor_reach(keyword = "Figure 5a. histogram for all Fold 80 base penalty for samples") %>%
-    slip_in_img(src = "''' + input.fold80_plot + '''", width = 5, height = 5, pos = "before") %>%   
+    body_add_img(src = "''' + input.fold80_plot + '''", width = 5, height = 5, pos = "before") %>%   
     cursor_reach(keyword = "Figure 5b. boxplot for median and mean insert sizes") %>%
-    slip_in_img(src = "''' + input.insertSize_plot + '''", width = 5, height = 5, pos = "before") %>% '''
+    body_add_img(src = "''' + input.insertSize_plot + '''", width = 5, height = 5, pos = "before") %>% '''
         else:    
             rTxt += '''     
     cursor_reach(keyword = "Figure 5. boxplot for median and mean insert sizes") %>%
-    slip_in_img(src = "''' + input.insertSize_plot + '''", width = 5, height = 5, pos = "before") %>% '''
+    body_add_img(src = "''' + input.insertSize_plot + '''", width = 5, height = 5, pos = "before") %>% '''
     
         rTxt += '''
               
     cursor_reach(keyword = "Figure 6. boxplot of average oxidation q score and lowest oxidation q score") %>%
-    slip_in_img(src = "''' + input.oxidation_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.oxidation_plot + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Figure 7. boxplot of Lowest Preadapter and Baitbias Total Score for all samples") %>%
-    slip_in_img(src = "''' + input.seqArtifact_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.seqArtifact_plot + '''", width = 5, height = 5, pos = "before") %>%
 
     cursor_reach(keyword = "Figure 8. ChrY/ChrX reads ratio for all subjects") %>%
-    slip_in_img(src = "''' + input.sex_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.sex_plot + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Figure 9. Laser ancestry estimation for all subjects") %>%
-    slip_in_img(src = "''' + input.ancestry_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.ancestry_plot + '''", width = 5, height = 5, pos = "before") %>%
     ''' 
         if config['MODE'] == 'somatic':
             rTxt += '''         
     cursor_reach(keyword = "Figure 10a. VAF distribution across all base changes") %>%
-    slip_in_img(src = "''' + input.basechange_distribution + '''", width = 5, height = 5, pos = "before") %>%   
+    body_add_img(src = "''' + input.basechange_distribution + '''", width = 5, height = 5, pos = "before") %>%   
     cursor_reach(keyword = "Figure 10b. base change counts per disease group") %>%
-    slip_in_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") %>%    
+    body_add_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") %>%    
     cursor_reach(keyword = "Figure 11. scatter plot of testing site count against concordant rate") %>%
-    slip_in_img(src = "''' + input.bam_matcher_plot + '''", width = 5, height = 5, pos = "before") '''
+    body_add_img(src = "''' + input.bam_matcher_plot + '''", width = 5, height = 5, pos = "before") '''
         elif config['MODE'] == 'tumor_only':
             rTxt += '''         
     cursor_reach(keyword = "Figure 10a. VAF distribution across all base changes") %>%
-    slip_in_img(src = "''' + input.basechange_distribution + '''", width = 5, height = 5, pos = "before") %>%   
+    body_add_img(src = "''' + input.basechange_distribution + '''", width = 5, height = 5, pos = "before") %>%   
     cursor_reach(keyword = "Figure 10b. base change counts per disease group") %>%
-    slip_in_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") '''
+    body_add_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") '''
         else:    
             rTxt += '''     
     body_replace_all_text("GROUP_BASECHANGE", "''' + str(groupBasechangeDir) + '''", fixed=TRUE) %>%
     body_replace_all_text("RELATEDNESS_REPORT", "''' + str(relatednessReport) + '''", fixed=TRUE) %>%
     
     cursor_reach(keyword = "Figure 10a. Ensemble filtered variant count by sample") %>%
-    slip_in_img(src = "''' + input.total_count + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.total_count + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Table 6a. 10 samples with lowest variant count ") %>%
     body_add_flextable(value = ft_6a) %>%	
     cursor_reach(keyword = "Table 6b. 10 samples with lowest ti/tv ratio") %>%
     body_add_flextable(value = ft_6b) %>%
     cursor_reach(keyword = "Figure 10b. Ensemble filtered variant ti/tv ratio by sample") %>%
-    slip_in_img(src = "''' + input.titv_ratio + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.titv_ratio + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Figure 10c. base change counts per disease group") %>%
-    slip_in_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Figure 10d. missing call rate per disease group") %>%
-    slip_in_img(src = "''' + input.missingRate_hist + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.missingRate_hist + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Figure 11. off-diagonal pairwise sample relatedness kinship coefficient") %>%
-    slip_in_img(src = "''' + input.relatedness_hist + '''", width = 5, height = 5, pos = "before") %>%'''
+    body_add_img(src = "''' + input.relatedness_hist + '''", width = 5, height = 5, pos = "before") %>%'''
     
         rTxt += '''
 print(my_doc, target = "''' + output.doc + '''")
@@ -322,4 +322,4 @@ print(my_doc, target = "''' + output.doc + '''")
         shell('R --vanilla < {output.R} > {output.Rout}')
     
 
-#    slip_in_img(src = "''' + input.mosdepth_plot + '''", width = 6, height = 6, pos = "before") %>%
+#    body_add_img(src = "''' + input.mosdepth_plot + '''", width = 6, height = 6, pos = "before") %>%

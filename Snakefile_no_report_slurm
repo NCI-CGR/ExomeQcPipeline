@@ -159,6 +159,7 @@ else:
     if config['post_calling_check']:           
         include: 'modules_slurm/Snakefile_postcalling_plot'      
     if config['relatedness_check']:           
+        print("relateness check")
         include: 'modules_slurm/Snakefile_relatedness'
         
 # include: 'modules_slurm/Snakefile_ancestry_plot'
@@ -185,15 +186,18 @@ rule all:
         precalling_dir + '/insertSize.png' if config['pre_calling_check'] else [],        
         precalling_dir + '/seq_artifact.png' if config['pre_calling_check'] else [],
         precalling_dir + '/oxidation.png' if config['pre_calling_check'] else [],
-        postcalling_qc_dir + '/basechange_all.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/variant_count_perKB.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/variant_count.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/titv_ratio.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callRate_bychr.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callRate_bychr.quantile.txt' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callRate_byGroup.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/basechange_3d.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' ) else [],        
-        postcalling_qc_dir + '/basechange_distribution.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' ) else [],
-        'relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'wgs' or config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/basechange_all.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/variant_count_perKB.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/variant_count.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/titv_ratio.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/PC1-PC2.pdf' if ( config['post_calling_check'] and not config['MODE'] == 'somatic' ) else [],
+        postcalling_qc_dir + '/PercentHist.pdf' if ( config['post_calling_check'] and not config['MODE'] == 'somatic' ) else [],
+        postcalling_qc_dir + '/callers_venn.png' if ( config['post_calling_check'] and not config['MODE'] == 'somatic' ) else [],
+        postcalling_qc_dir + '/callRate_bychr.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/callRate_bychr.quantile.txt' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/callRate_byGroup.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/basechange_3d.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],        
+        postcalling_qc_dir + '/basechange_distribution.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],
+        'relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'wgs' ) or ( config['relatedness_check'] and config['MODE'] == 'wes' ) else [],
         'fastqc/multiqc_report.html' if config['fastqc_check'] else []
  

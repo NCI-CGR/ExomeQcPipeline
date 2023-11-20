@@ -23,6 +23,62 @@ rule run_basechange:
         '. /etc/profile.d/modules.sh; module load bcftools;'
         'bcftools view {input} | perl ./modules/vcfFilter_count_base_change.pl - {output}'
 
+rule caller_concordance:
+    input:
+        ensemble_vcf
+    output:
+        postcalling_qc_dir + '/caller_concordance.txt'
+    params:
+        bedFile    
+    shell:
+        '''
+        module load bcftools;
+        bcftools view -R {params} {input} | grep '^[^#]' | awk '{{print $8}}' | awk -F"set=" '{{print $2}}' | sort | uniq -c > {output}; 
+        '''        
+
+rule caller_venn_diagram:
+    input:        
+        postcalling_qc_dir + '/caller_concordance.txt'
+    output:
+        postcalling_qc_dir + '/callers_venn.png'    
+    run:
+        import matplotlib.pyplot as plt
+        from matplotlib_venn import venn3
+        import pandas as pd
+        df = pd.read_csv(input[0], sep='\s', header=None)
+        df.columns =['count', 'type']
+        # Create a dictionary from the DataFrame
+        variable_dict = dict(zip(df['type'], df['count']))
+        size_HC_DV = variable_dict['HC-DV']
+        size_DV_strelka2 = variable_dict['DV-strelka2']
+        size_HC_strelka2 = variable_dict['HC-strelka2']
+        size_HC_DV_strelka2 = variable_dict['HC-DV-strelka2']
+        size_DV = variable_dict['DV'] + size_HC_DV - size_HC_DV_strelka2 + size_DV_strelka2
+        size_HC = variable_dict['HC'] - size_HC_DV_strelka2 + size_HC_DV + size_HC_strelka2
+        size_strelka2 = variable_dict['strelka2'] - size_HC_DV_strelka2 + size_DV_strelka2 + size_HC_strelka2
+        # Create a Venn diagram
+        venn = venn3(
+            subsets=(size_HC, size_DV, size_HC_DV, size_strelka2, size_HC_strelka2, size_DV_strelka2, size_HC_DV_strelka2),
+            set_labels=('Dataset HC', 'Dataset DV', 'Dataset strelka2')
+        )
+        # Customize the diagram
+        venn.get_label_by_id('100').set_text(size_HC - size_HC_DV - size_HC_strelka2 + size_HC_DV_strelka2)
+        venn.get_label_by_id('010').set_text(size_DV - size_HC_DV - size_DV_strelka2 + size_HC_DV_strelka2)
+        venn.get_label_by_id('001').set_text(size_strelka2 - size_HC_strelka2 - size_DV_strelka2 + size_HC_DV_strelka2)
+        # Display the Venn diagram
+        plt.title("Venn Diagram")
+        plt.savefig(output[0])
+        
+rule pca:
+    input:
+        postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz'
+    output:
+        eigenVal = postcalling_qc_dir + '/variants_annotated_majority_intersect.common.eur.eigenval',
+        plotPC = postcalling_qc_dir + '/PC1-PC2.pdf',
+        plotHist = postcalling_qc_dir + '/PercentHist.pdf'
+    shell:
+        'module load bcftools R;'    
+        'sh modules_slurm/PCA.sh {input}; '     
 
 #switch from glu util.table to P dplyr
 rule postcalling_qc_table:
@@ -187,7 +243,7 @@ rule call_rate_plot:
         table = postcalling_qc_dir + '/callRate_bychr.quantile.txt',
         plotByGroup = postcalling_qc_dir + '/callRate_byGroup.jpeg'       
     params:
-        script = 'modules/callRate.R'    
+        script = 'modules_slurm/callRate.R'    
     shell:   
         '''
         . /etc/profile.d/modules.sh; module load R;

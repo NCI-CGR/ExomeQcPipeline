@@ -51,7 +51,8 @@ rule fastNGSadmixPCA:
         eigenValue = ancestry_check_dir + '/{sample}_eigenvals.txt',
         eigenVector = ancestry_check_dir + '/{sample}_eigenvecs.txt',
         pcaPlot = ancestry_check_dir + '/{sample}_PCAplot.pdf'
-        
+    threads:
+        3        
     params:
         ref = config['refPlink'],
         prefix = ancestry_check_dir + '/{sample}'

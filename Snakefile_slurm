@@ -109,7 +109,7 @@ if config['MODE'] == 'somatic':
 include: 'modules_slurm/Snakefile_contamination_plot'
 include: 'modules_slurm/Snakefile_coverage_plot'
 include: 'modules_slurm/Snakefile_duplication_plot'
-#include: 'modules_slurm/Snakefile_fastqc'   
+include: 'modules_slurm/Snakefile_fastqc'   
 
 if not config['MODE'] == 'wgs':
     include: 'modules_slurm/Snakefile_exomeCQA_plot'
@@ -117,7 +117,7 @@ if not config['MODE'] == 'wgs':
 else:
     include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
     
-#include: 'modules_slurm/Snakefile_gender_plot'
+include: 'modules_slurm/Snakefile_gender_plot'
 include: 'modules_slurm/Snakefile_pre_calling_plot'
 
 if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only':

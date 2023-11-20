@@ -45,7 +45,7 @@ for i in `awk -F"\t" '{print $1}' ${OUTDIR}/lane_dup_rate.txt | sort | uniq`; do
 	#get the most recent secondary log
 	DEDUP_LOG=$(find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ -name "_build_bam_*${i}*.stderr"  -print0 | xargs -r -0 ls -1 -t | head -1)
 	if [[ -f ${DEDUP_LOG} ]]; then
-	    SECONDARY_DUPLICATE_READS=`grep "records as duplicates" ${DEDUP_LOG} | tail -1|cut -d" " -f3`
+	    SECONDARY_DUPLICATE_READS=`find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ -name "_build_bam_*${i}*.stderr" -print0 | xargs -0 grep "records as duplicates" | head -1 |cut -d" " -f3` # grep the duplicate record for all find output and use the top one.
 	else
 		SECONDARY_DUPLICATE_READS=0
 	fi
