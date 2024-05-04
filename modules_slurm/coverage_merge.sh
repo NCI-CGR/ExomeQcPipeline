@@ -19,10 +19,10 @@ else
 fi
 
 #glu util.join -1 ANALYSISID -2 ANALYSISID -j inner ${OUTDIR}/Sum_Coverage.txt ${CASE_FILE} -o ${OUTDIR}/Final_merged_coverage.txt:c=ANALYSISID,STATUS,COV,ADDED_COV,DOWNSAMPLE 
-sort ${CASE_FILE} > ${CASE_FILE}.tmp
-sort ${OUTDIR}/Sum_Coverage.txt > ${OUTDIR}/Sum_Coverage.txt.tmp
+(head -n 1 ${CASE_FILE} && tail -n +2 ${CASE_FILE} |sort) > ${CASE_FILE}.tmp
+(head -n 1 ${OUTDIR}/Sum_Coverage.txt && tail -n +2 ${OUTDIR}/Sum_Coverage.txt|sort) > ${OUTDIR}/Sum_Coverage.txt.tmp
 join -t $'\t' ${CASE_FILE}.tmp ${OUTDIR}/Sum_Coverage.txt.tmp  > ${OUTDIR}/Final_merged_coverage.txt
-rm  ${CASE_FILE}.tmp  ${OUTDIR}/Sum_Coverage.txt.tmp
+rm ${CASE_FILE}.tmp  ${OUTDIR}/Sum_Coverage.txt.tmp
 
 awk -F"\t" '{print $1"\t"$3}' ${OUTDIR}/Sum_Coverage.txt > ${OUTDIR}/../Downsample.txt
 

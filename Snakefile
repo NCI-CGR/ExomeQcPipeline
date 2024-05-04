@@ -6,7 +6,7 @@ import os
 from glob import glob
 from glob import iglob
 
-configfile: "modules_slurm/config.yaml"
+configfile: "modules/config.yaml"
 outName = os.path.basename(os.path.dirname(config['project']))
 ensemble_vcf = config['ensemble_vcf']
 bam_location = config['bam_location']
@@ -21,14 +21,13 @@ precallingReport = config['precalling_report']
 #exomeCQAgeneReport = config['exomCQA_gene']
 #exomeCQAexonReport = config['exomCQA_exon']
 
-sex_check_dir = 'sex_check'
 gender_check_dir = 'gender_check'
 postcalling_qc_dir = 'postcalling_qc'
 coverage_dir = 'coverage'
 contamination_dir = 'bamContamination'
-ancestry_check_dir = 'ancestry'
+ancestry_check_dir = 'laser'
 exomeCQA_dir = 'exomeCQA'
-hgdpDir = 'modules_slurm/HGDP'
+hgdpDir = 'modules/HGDP'
 deduplication_dir = 'deduplication'
 precalling_dir = 'precalling_qc'
 relatedness_dir = 'relatedness'
@@ -39,7 +38,7 @@ SAMPLES = []
 sampleGroupDict = {}
 CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal']
 
-include: "modules_slurm/Snakemake_utils"
+include: "modules/Snakemake_utils"
 
 ########################
 #Germline call
@@ -102,38 +101,32 @@ if config['MODE'] == 'somatic':
     pair_manifest = config['pairs']
     bamMatcher_dir = 'bamMatcher'
     bamMatcherExe = config['BamMatcher']
-    include: 'modules_slurm/Snakefile_bam_matcher'
+    include: 'modules/Snakefile_bam_matcher'
     
 #launch all rules    
-#include: 'modules_slurm/Snakefile_ancestry_plot'
-#include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
-include: 'modules_slurm/Snakefile_contamination_plot'
-include: 'modules_slurm/Snakefile_coverage_plot'
-include: 'modules_slurm/Snakefile_duplication_plot'
-include: 'modules_slurm/Snakefile_fastqc'   
+include: 'modules/Snakefile_ancestry_plot'
+#include: 'modules/Snakefile_ancestry_plot_by_group'
+include: 'modules/Snakefile_contamination_plot'
+include: 'modules/Snakefile_coverage_plot'
+include: 'modules/Snakefile_duplication_plot'
+include: 'modules/Snakefile_fastqc'   
 
 if not config['MODE'] == 'wgs':
-    include: 'modules_slurm/Snakefile_exomeCQA_plot'
-    #include: 'modules_slurm/Snakefile_ancestry_plot_laser'
-else:
-    include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
+    include: 'modules/Snakefile_exomeCQA_plot'
     
-include: 'modules_slurm/Snakefile_sex_plot'
-include: 'modules_slurm/Snakefile_pre_calling_plot'
+include: 'modules/Snakefile_gender_plot'
+include: 'modules/Snakefile_pre_calling_plot'
 
-if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only':
-    print(config['MODE'])
-    include: 'modules_slurm/Snakefile_postcalling_plot_somatic'
-    include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
-else:
-    include: 'modules_slurm/Snakefile_relatedness'
-    include: 'modules_slurm/Snakefile_postcalling_plot'
+if config['MODE'] == 'somatic':
+    include: 'modules/Snakefile_postcalling_plot_somatic'
+else:    
+    include: 'modules/Snakefile_relatedness'
+    include: 'modules/Snakefile_postcalling_plot'
 
-include: 'modules_slurm/Snakefile_doc'
+include: 'modules/Snakefile_doc'
     
 rule all:
     input:
         bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
-        basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [], 
-        QCreport = 'word_doc/filtered_sample.txt',
+        basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if not config['MODE'] == 'somatic' else [], 
         word_report = 'word_doc/' + outName + '_QC_Report.docx'

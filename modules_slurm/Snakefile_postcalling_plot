@@ -4,6 +4,8 @@ import sys
 import os
 from glob import glob
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib_venn import venn3
 
 
 #rule all:
@@ -21,7 +23,7 @@ rule run_basechange:
         postcalling_qc_dir + '/variants_annotated_basechange.txt'
     shell:
         '. /etc/profile.d/modules.sh; module load bcftools;'
-        'bcftools view {input} | perl ./modules/vcfFilter_count_base_change.pl - {output}'
+        'bcftools view {input} | perl ./modules_slurm/vcfFilter_count_base_change.pl - {output}'
 
 rule caller_concordance:
     input:
@@ -71,14 +73,20 @@ rule caller_venn_diagram:
         
 rule pca:
     input:
-        postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz'
+        vcf = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz',
+        pca = ancestry_check_dir + '/procrustesPCASamples.txt'
     output:
         eigenVal = postcalling_qc_dir + '/variants_annotated_majority_intersect.common.eur.eigenval',
         plotPC = postcalling_qc_dir + '/PC1-PC2.pdf',
         plotHist = postcalling_qc_dir + '/PercentHist.pdf'
+    params:
+        postcalling_qc_dir + '/variants_annotated_sample_eur.lst'
     shell:
-        'module load bcftools R;'    
-        'sh modules_slurm/PCA.sh {input}; '     
+        '''
+        module load bcftools R;
+        awk '{{if($3<0.05 && $4<-0.05 && $1=="Samples"){{print $2}}}}' {input.pca} > {params}; 
+        sh modules_slurm/PCA.sh {input.vcf} {params}; 
+        '''
 
 #switch from glu util.table to P dplyr
 rule postcalling_qc_table:
@@ -93,7 +101,7 @@ rule postcalling_qc_table:
 #        tmp = postcalling_qc_dir + '/titv_tmp.txt'
     shell:
 #        '. /etc/profile.d/modules.sh; module load python/2.7.5 glu;'
-        'sh ./modules/post_calling_table.sh {input} {params.outdir};'
+        'sh ./modules_slurm/post_calling_table.sh {input} {params.outdir};'
 #        'glu util.join -1 SAMPLE -2 ANALYSISID -j inner {output.variant} {params.cov_report} -o {params.tmp}:c=SAMPLE,TOTAL,TI,TV,RATIO,CACO,COV; mv {params.tmp} {output.variant}'
 
 
@@ -114,7 +122,7 @@ rule variant_count_plot:
         R = postcalling_qc_dir + '/variant_count.R',
         Rout = postcalling_qc_dir + '/variant_count.R.out'
     run:
-        df = pd.read_csv(input[1], sep="\t", header=None, names=["chr", "start", "end"])
+        df = pd.read_csv(input[1], sep="\t", header=None, usecols=[0,1,2], names=["chr", "start", "end"])
         df["len"] = df["end"] - df["start"]
         totalBP = sum(df["len"])      
         rTxt = '''

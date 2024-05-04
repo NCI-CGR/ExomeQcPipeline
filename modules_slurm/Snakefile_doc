@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+import pandas as pd
 
 #outName = os.path.basename(os.path.dirname(config['project']))
 if config['MODE'] == 'somatic': 
@@ -38,11 +39,12 @@ else:
         output:
             'word_doc/sample_summary.txt'
         params:
-            postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/titv.txt' 
+            postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/titv.txt', 
         run:
             GroupDict = {}
             with open(output[0], 'w') as outfile: 
                 outfile.write( 'DISEASE_GROUP\tSUBJECT_COUNTS\tSUBJECT_COUNTS_POSTFILTER' + '\n' )
+                a_file = open(params[0], 'r')
                 for fname in input.single:   
                     #with open(fname, 'r') as infile: no need to open file
                     GROUP=os.path.basename(os.path.dirname(fname))
@@ -51,13 +53,56 @@ else:
                     else:
                         GroupDict[GROUP] = 1
                 for i in GroupDict:
-                    count = 0
-                    a_file = open(params[0], 'r')
+                    count = 0                    
                     for number, line in enumerate(a_file): 
                         if line.startswith(i): 
                             count += 1  
                     outfile.write( i + '\t' + str(GroupDict[i]) + '\t' + str(count) + '\n' )
-                
+                    
+rule qc_sample_summary:
+    input:
+        #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
+        single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()] #need to use for loop to include all sample single bam files
+    output:
+        'word_doc/filtered_sample.txt'
+    params:
+        postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic' else postcalling_qc_dir + '/titv.txt', 
+        precallingReport,
+        project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
+        bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else []
+    run:
+        if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic':
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tbammatcher_Rate' + '\n' )
+                a_file = pd.read_csv(params[0], sep='\t')
+                precalling_file = pd.read_csv(params[1], sep='\t')
+                contamination_file = pd.read_csv(params[2], sep='\t')
+                bammatcher_file = pd.read_csv(params[3], sep='\t')
+                for fname in input.single:                
+                    analysisID = os.path.basename(fname)[:-4]
+                    if not a_file['FileName'].str.contains(analysisID).any():
+                        aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['MEAN_COVERAGE']).split()[1]
+                        preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                        baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                        contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
+                        bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contains(analysisID)]['RATE']).split()[1]
+                        outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t' + bammatcherRate + '\n' )        
+        else:        
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate' + '\n' )
+                a_file = pd.read_csv(params[0], sep='\t')
+
+                precalling_file = pd.read_csv(params[1], sep='\t')
+                contamination_file = pd.read_csv(params[2], sep='\t')
+                for fname in input.single:                
+                    analysisID = os.path.basename(fname)[:-4]
+                    if not a_file.isin([analysisID]).any().any():
+                        aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['MEAN_COVERAGE']).split()[1]
+                        preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                        baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                        contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
+                        outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\n' )
+      
 rule word_doc:
     input:
         template = config['doc_template_somatic'] if config['MODE'] == 'somatic' else config['doc_template_germline'],
@@ -74,11 +119,11 @@ rule word_doc:
         fold80_plot = 'precalling_qc/fold80.png' if not config['MODE'] == 'wgs' else [],
         seqArtifact_plot = 'precalling_qc/seq_artifact.png',
         oxidation_plot = 'precalling_qc/oxidation.png',
-        summary_ue = 'exomeCQA/summary_ue.txt' if not config['MODE'] == 'wgs' else [],		
-        summary_ccs = 'exomeCQA/summary_ccs.txt' if not config['MODE'] == 'wgs' else [],
-        ccs_plot = 'exomeCQA/cohort_coverage_sparseness.png' if not config['MODE'] == 'wgs' else [],
-        ue_plot = 'exomeCQA/unevenness.png' if not config['MODE'] == 'wgs' else [],
-        top10_ue = 'exomeCQA/top10_ue.txt' if not config['MODE'] == 'wgs' else [],
+        # summary_ue = 'exomeCQA/summary_ue.txt' if not config['MODE'] == 'wgs' else [],		
+        # summary_ccs = 'exomeCQA/summary_ccs.txt' if not config['MODE'] == 'wgs' else [],
+        # ccs_plot = 'exomeCQA/cohort_coverage_sparseness.png' if not config['MODE'] == 'wgs' else [],
+        # ue_plot = 'exomeCQA/unevenness.png' if not config['MODE'] == 'wgs' else [],
+        # top10_ue = 'exomeCQA/top10_ue.txt' if not config['MODE'] == 'wgs' else [],
         total_count = 'postcalling_qc/variant_count.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         botton10_count = 'postcalling_qc/variant_outlier10.txt' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         titv_ratio = 'postcalling_qc/titv_ratio.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
@@ -99,8 +144,8 @@ rule word_doc:
         bed = bedFile if not config['MODE'] == 'wgs' else []
         exomeCQAgeneReport = exomeCQA_dir + '/exomeCQA_gene.chrALL' if not config['MODE'] == 'wgs' else []
         exomeCQAexonReport = exomeCQA_dir + '/exomeCQA_exon.chrALL' if not config['MODE'] == 'wgs' else []
-        geneNum = len(open(exomeCQAgeneReport).readlines(  )) if not config['MODE'] == 'wgs' else []
-        exonNum = len(open(exomeCQAexonReport).readlines(  )) if not config['MODE'] == 'wgs' else []
+        # geneNum = len(open(exomeCQAgeneReport).readlines(  )) if not config['MODE'] == 'wgs' else []
+        # exonNum = len(open(exomeCQAexonReport).readlines(  )) if not config['MODE'] == 'wgs' else []
         precallingQCReport = precallingReport
         laserDir = project.rstrip('/') + '/ExomeQcPipeline/' + ancestry_check_dir
         fasqc = project.rstrip('/') + '/ExomeQcPipeline/fastqc/multiqc_report.html'
@@ -164,59 +209,59 @@ ft_6b <- regulartable(table_6b, col_keys = names(table_6b)) %>%
     autofit()
 ft_6b <- align(ft_6b, align = "center")'''
 
-        if not config['MODE'] == 'wgs':
-            rTxt += '''  
-    summary_ue <- read.table("''' + input.summary_ue + '''", header = TRUE, fill=TRUE)
-    min = summary_ue$Min.
-    q1 = summary_ue$X1st
-    med = summary_ue$Qu.
-    mean = summary_ue$Median
-    q3 = summary_ue$Mean
-    max=summary_ue$X3rd
-    table_4a <- data.frame(min=min, q1=q1, med=med, mean=mean, q3=q3, max=max)
+        # if not config['MODE'] == 'wgs':
+            # rTxt += '''  
+    # summary_ue <- read.table("''' + input.summary_ue + '''", header = TRUE, fill=TRUE)
+    # min = summary_ue$Min.
+    # q1 = summary_ue$X1st
+    # med = summary_ue$Qu.
+    # mean = summary_ue$Median
+    # q3 = summary_ue$Mean
+    # max=summary_ue$X3rd
+    # table_4a <- data.frame(min=min, q1=q1, med=med, mean=mean, q3=q3, max=max)
 
-    ft_4a <- regulartable(table_4a, col_keys = names(table_4a)) %>%
-        fontsize(size = 8, part = "all") %>%
-        fontsize(i = 1, size = 10, part = "header") %>%
-        color(i = 1, color = "#007FA6", part = "header") %>%
-        theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
-        autofit()
-    ft_4a <- align(ft_4a, align = "center")
+    # ft_4a <- regulartable(table_4a, col_keys = names(table_4a)) %>%
+        # fontsize(size = 8, part = "all") %>%
+        # fontsize(i = 1, size = 10, part = "header") %>%
+        # color(i = 1, color = "#007FA6", part = "header") %>%
+        # theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+        # autofit()
+    # ft_4a <- align(ft_4a, align = "center")
 
-    double_format <- function(x){
-      sprintf("%.2f", x)
-    }
+    # double_format <- function(x){
+      # sprintf("%.2f", x)
+    # }
 
-    summary_ccs <- read.table("''' + input.summary_ccs + '''", header=TRUE, fill=TRUE)
-    min = summary_ccs$Min.
-    q1 = summary_ccs$X1st
-    med = summary_ccs$Qu.
-    mean = summary_ccs$Median
-    q3 = summary_ccs$Mean
-    max=summary_ccs$X3rd
-    table_4b <- data.frame(min=min, q1=q1, med=med, mean=mean, q3=q3, max=max)
+    # summary_ccs <- read.table("''' + input.summary_ccs + '''", header=TRUE, fill=TRUE)
+    # min = summary_ccs$Min.
+    # q1 = summary_ccs$X1st
+    # med = summary_ccs$Qu.
+    # mean = summary_ccs$Median
+    # q3 = summary_ccs$Mean
+    # max=summary_ccs$X3rd
+    # table_4b <- data.frame(min=min, q1=q1, med=med, mean=mean, q3=q3, max=max)
 
-    ft_4b <- regulartable(table_4b, col_keys = names(table_4b)) %>%
-        set_formatter("Min" = double_format, "1st.Qu" = double_format, "Median" = double_format, "Mean" = double_format, "3rd.Qu" = double_format, "Max" = double_format) %>%
-        fontsize(size = 8, part = "all") %>%
-        fontsize(i = 1, size = 10, part = "header") %>%
-        color(i = 1, color = "#007FA6", part = "header") %>%
-        theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
-        autofit()
-    ft_4b <- align(ft_4b, align = "center")
+    # ft_4b <- regulartable(table_4b, col_keys = names(table_4b)) %>%
+        # set_formatter("Min" = double_format, "1st.Qu" = double_format, "Median" = double_format, "Mean" = double_format, "3rd.Qu" = double_format, "Max" = double_format) %>%
+        # fontsize(size = 8, part = "all") %>%
+        # fontsize(i = 1, size = 10, part = "header") %>%
+        # color(i = 1, color = "#007FA6", part = "header") %>%
+        # theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+        # autofit()
+    # ft_4b <- align(ft_4b, align = "center")
 
 
-    table_5 <- read.table("''' + input.top10_ue + '''", header = TRUE)
+    # table_5 <- read.table("''' + input.top10_ue + '''", header = TRUE)
 
-    ft_5 <- regulartable(table_5, col_keys = names(table_5)) %>%
-        fontsize(size = 8, part = "all") %>%
-        fontsize(i = 1, size = 10, part = "header") %>%
-        color(i = 1, color = "#007FA6", part = "header") %>%
-        theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
-        autofit()
-    ft_5 <- align(ft_5, align = "center")            
+    # ft_5 <- regulartable(table_5, col_keys = names(table_5)) %>%
+        # fontsize(size = 8, part = "all") %>%
+        # fontsize(i = 1, size = 10, part = "header") %>%
+        # color(i = 1, color = "#007FA6", part = "header") %>%
+        # theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+        # autofit()
+    # ft_5 <- align(ft_5, align = "center")            
  
-    '''   
+    # '''   
     
         rTxt += '''
 my_doc <- read_docx(path = "''' + input.template + '''") %>%
@@ -224,10 +269,6 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     body_replace_all_text("BUILD_NAME", "''' + str(buildName) + '''", fixed=TRUE) %>%
     body_replace_all_text("BED_FILE", "''' + str(bed) + '''", fixed=TRUE) %>%
     body_replace_all_text("FASTQC_REPORT", "''' + str(fasqc) + '''", fixed=TRUE) %>%
-    body_replace_all_text("GENE_NUM", "''' + str(geneNum) + '''", fixed=TRUE) %>% 
-    body_replace_all_text("EXON_NUM", "''' + str(exonNum) + '''", fixed=TRUE) %>%
-    body_replace_all_text("EXOMCQA_GENE_REPORT", "''' + str(exomeCQAgeneReport) + '''", fixed=TRUE) %>%
-    body_replace_all_text("EXOMCQA_EXON_REPORT", "''' + str(exomeCQAexonReport) + '''", fixed=TRUE) %>% 
     body_replace_all_text("PRECALLING_QC_REPORT", "''' + str(precallingQCReport) + '''", fixed=TRUE) %>%
     body_replace_all_text("LASER_DIR", "''' + str(laserDir) + '''", fixed=TRUE) %>%
     
@@ -247,18 +288,7 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     body_add_img(src = "''' + input.aveCov_plot + '''", width = 5, height = 5, pos = "before") %>%
     '''
         if not config['MODE'] == 'wgs':           
-            rTxt += '''           
-    cursor_reach(keyword = "Table 4a. Min, 1st quantile, Median, Mean, 3rd quantile and Max score for US score") %>%
-    body_add_flextable(value = ft_4a) %>%	
-    cursor_reach(keyword = "Table 4b. Min, 1st quantile, Median, Mean, 3rd quantile and Max score for CCS score") %>%
-    body_add_flextable(value = ft_4b) %>%
-        
-    cursor_reach(keyword = "Figure 4. the histogram of UE score and CCS Score for all sample") %>%
-    body_add_img(src = "''' + input.ccs_plot + '''", width = 2.5, height = 2.5, pos = "before") %>%
-    body_add_img(src = "''' + input.ue_plot + '''", width = 2.5, height = 2.5, pos = "before") %>%
-    cursor_reach(keyword = "Table 5.  10 regions with highest Unevenness Score") %>%
-    body_add_flextable(value = ft_5) %>%
-    
+            rTxt += '''              
     cursor_reach(keyword = "Figure 5a. histogram for all Fold 80 base penalty for samples") %>%
     body_add_img(src = "''' + input.fold80_plot + '''", width = 5, height = 5, pos = "before") %>%   
     cursor_reach(keyword = "Figure 5b. boxplot for median and mean insert sizes") %>%
@@ -277,7 +307,7 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
 
     cursor_reach(keyword = "Figure 8. ChrY/ChrX reads ratio for all subjects") %>%
     body_add_img(src = "''' + input.sex_plot + '''", width = 5, height = 5, pos = "before") %>%
-    cursor_reach(keyword = "Figure 9. Laser ancestry estimation for all subjects") %>%
+    cursor_reach(keyword = "Figure 9. Ancestry estimation for all subjects") %>%
     body_add_img(src = "''' + input.ancestry_plot + '''", width = 5, height = 5, pos = "before") %>%
     ''' 
         if config['MODE'] == 'somatic':
