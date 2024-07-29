@@ -1,6 +1,6 @@
 ##general required files
 project: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/QC
-manifest: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/Manifest/SR0443-004-ANALYSIS-MANIFEST.csv
+manifest: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/Manifest/SR0443-004-ANALYSIS-MANIFEST_test.csv
 bam_location: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/bam_location
 precalling_report: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/QC/pre_calling_qc_report.txt
 ref: /DCEG/CGF/Resources/Data/genome/hg19_canonical_correct_chr_order.fa
@@ -17,12 +17,12 @@ doc_template_germline: ExomeQcPipeline_Template_interim.docx
 
 ##somatic required files
 BamMatcher: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/bam-matcher3.py
-pairs: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/Manifest/pairs.txt
+pairs: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/Manifest/pairs_test.txt
 doc_template_somatic: ExomeQcPipeline_Somatic_Template_interim.docx
 ensemble_dir: /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/Results/Ensemble
 
 ##flags
-post_calling_check: FALSE
+post_calling_check: TRUE
 relatedness_check: FALSE
 
 ##parameter files

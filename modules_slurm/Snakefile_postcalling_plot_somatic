@@ -27,7 +27,7 @@ from glob import glob
         
 rule run_basechange:
     input:
-        expand(postcalling_qc_dir + '/{sample}_intersection_region_passed.recode.vcf', sample = SAMPLES)
+        expand(postcalling_qc_dir + '/{sample}_intersection_region_passed.recode.vcf', sample = PAIRS)
     output:
         basechange = postcalling_qc_dir + '/ensemble_basechange.txt',
         vaf = postcalling_qc_dir + '/ensemble_vaf_dp.txt'        
