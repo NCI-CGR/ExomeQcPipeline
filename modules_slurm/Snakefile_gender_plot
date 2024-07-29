@@ -31,10 +31,10 @@ rule XYratio_table:
         single = expand(project + '/gender_concordance_check/intermediate_files/counts/{sample}_X_Y_COUNTS.txt', sample = SAMPLES),
         Manifest = manifest
     output:
-        gender_check_dir + '/XYratio_table.txt'
+        sex_check_dir + '/XYratio_table.txt'
     params:
 #        Manifest = getManifest, get error message of 'generator' object is not subscriptable, when use this function at params.
-        merged_table = gender_check_dir + '/XYratio_merged.txt'
+        merged_table = sex_check_dir + '/XYratio_merged.txt'
     run:
         with open(params.merged_table, 'w') as mergedfile:
             for fname in input.single:
@@ -59,12 +59,12 @@ rule XYratio_table:
 
 rule gender_plot:
     input:
-        gender_check_dir + '/XYratio_table.txt'
+        sex_check_dir + '/XYratio_table.txt'
     output:
-        png_gender = gender_check_dir + '/gender_check.png',
-        outlier_table = gender_check_dir + '/gender_outlier.txt',
-        R = gender_check_dir + '/gender_check.R',
-        Rout = gender_check_dir + '/gender_check.R.out'
+        png_gender = sex_check_dir + '/sex_check.png',
+        outlier_table = sex_check_dir + '/gender_outlier.txt',
+        R = sex_check_dir + '/gender_check.R',
+        Rout = sex_check_dir + '/gender_check.R.out'
     run:
         rTxt = '''
         library(ggplot2)

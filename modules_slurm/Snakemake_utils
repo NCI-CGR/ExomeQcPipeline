@@ -5,7 +5,7 @@ import os
 if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only':
     rule run_filter_somatic:
         input:
-            ensemble_dir + '/{sample}_WES_PON_passed.vcf'
+            ensemble_dir + '/{sample}_WES_PON_passed.vcf' if (config['MODE'] == 'tumor_only') else ensemble_dir + '/{sample}_5callers_voting_PASS.vcf'
         output:
             postcalling_qc_dir + '/{sample}_intersection_region_passed.recode.vcf'
         params:
