@@ -22,7 +22,7 @@ rule multiqc:
     output:
         'fastqc/multiqc_report.html'
     params:
-        outdir = project + '/ExomeQcPipeline/fastqc'    
+        outdir = 'fastqc'    
     singularity: "docker://ewels/multiqc:latest"
     shell:
         #'. /etc/profile.d/modules.sh; module load python/2.7.8;'

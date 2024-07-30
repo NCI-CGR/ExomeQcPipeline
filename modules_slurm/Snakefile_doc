@@ -35,16 +35,15 @@ else:
     rule table_sample_summary:
         input:
             #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
+            basechange = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/titv.txt',
             single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()] #need to use for loop to include all sample single bam files
         output:
-            'word_doc/sample_summary.txt'
-        params:
-            postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/titv.txt', 
+            'word_doc/sample_summary.txt' 
         run:
             GroupDict = {}
             with open(output[0], 'w') as outfile: 
                 outfile.write( 'DISEASE_GROUP\tSUBJECT_COUNTS\tSUBJECT_COUNTS_POSTFILTER' + '\n' )
-                a_file = open(params[0], 'r')
+                a_file = open(input.basechange, 'r')
                 for fname in input.single:   
                     #with open(fname, 'r') as infile: no need to open file
                     GROUP=os.path.basename(os.path.dirname(fname))
@@ -62,11 +61,12 @@ else:
 rule qc_sample_summary:
     input:
         #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
+        basechange = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic' else postcalling_qc_dir + '/titv.txt', 
         single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()] #need to use for loop to include all sample single bam files
+
     output:
         'word_doc/filtered_sample.txt'
     params:
-        postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic' else postcalling_qc_dir + '/titv.txt', 
         precallingReport,
         project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
         bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else []
@@ -74,10 +74,10 @@ rule qc_sample_summary:
         if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic':
             with open(output[0], 'w') as outfile: 
                 outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tbammatcher_Rate\tFiltered' + '\n' )
-                a_file = pd.read_csv(params[0], sep='\t')
-                precalling_file = pd.read_csv(params[1], sep='\t')
-                contamination_file = pd.read_csv(params[2], sep='\t')
-                bammatcher_file = pd.read_csv(params[3], sep='\t')
+                a_file = pd.read_csv(input.basechange, sep='\t')
+                precalling_file = pd.read_csv(params[0], sep='\t')
+                contamination_file = pd.read_csv(params[1], sep='\t')
+                bammatcher_file = pd.read_csv(params[2], sep='\t')
                 for fname in input.single:                
                     analysisID = os.path.basename(fname)[:-4]
                     aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['MEAN_COVERAGE']).split()[1]
@@ -92,13 +92,17 @@ rule qc_sample_summary:
         else:           
             with open(output[0], 'w') as outfile: 
                 outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tFiltered' + '\n' )
-                a_file = pd.read_csv(params[0], sep='\t')
+                a_file = pd.read_csv(input.basechange, sep='\t')
 
-                precalling_file = pd.read_csv(params[1], sep='\t')
-                contamination_file = pd.read_csv(params[2], sep='\t')
+                precalling_file = pd.read_csv(params[0], sep='\t')
+                contamination_file = pd.read_csv(params[1], sep='\t')
                 for fname in input.single:                
                     analysisID = os.path.basename(fname)[:-4]
-                    aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['MEAN_COVERAGE']).split()[1]
+                    possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
+                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
+                    existing_columns = [col for col in possible_columns if col in filtered_df.columns]
+                    #aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['AVG_COVERAGE']).split()[1]
+                    aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
                     preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
                     baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
                     contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
@@ -116,7 +120,8 @@ rule word_doc:
         top10_contamination = 'bamContamination/top10_contamination_rate.txt',
         aveCov_plot = 'coverage/Average_Coverage_caco.png', 
         sex_plot = 'gender_check/sex_check.png',
-        ancestry_plot = ancestry_check_dir + '/procrustesPCASamples.png',
+        ancestry_plot1 = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.png',
+        ancestry_plot2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.png',
         subject_dup_plot = 'deduplication/subject_dup_rate.png',
         top10_dup = 'deduplication/top10_dup_rate.txt',
         insertSize_plot = 'precalling_qc/insertSize.png',
@@ -312,7 +317,8 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     cursor_reach(keyword = "Figure 8. ChrY/ChrX reads ratio for all subjects") %>%
     body_add_img(src = "''' + input.sex_plot + '''", width = 5, height = 5, pos = "before") %>%
     cursor_reach(keyword = "Figure 9. Ancestry estimation for all subjects") %>%
-    body_add_img(src = "''' + input.ancestry_plot + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.ancestry_plot1 + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.ancestry_plot2 + '''", width = 5, height = 5, pos = "before") %>%
     ''' 
         if config['MODE'] == 'somatic':
             rTxt += '''         

@@ -74,13 +74,15 @@ rule doProcastesPCA:
         covar = expand(ancestry_check_dir + '/{sample}_covar.txt', sample = SAMPLES),   
         list = ancestry_check_dir + '/procrustes.list'        
     output:
-        png = ancestry_check_dir + '/procrustesPCASamples.png',
-        txt = ancestry_check_dir + '/procrustesPCASamples.txt'
+        png1 = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.png',
+        txt1 = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.txt',
+        png2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.png',
+        txt2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.txt'
     params:
         ref = config['refPlinkFam'],
         dir = ancestry_check_dir
     shell:
         'module load R;'    
         'Rscript /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/R/doProcastesPCA.R {params.dir} {params.ref} {input.list} Samples;'
-        'mv procrustesPCASamples.* {params.dir}'        
+        'mv procrustesPCASamples_* {params.dir}'        
     

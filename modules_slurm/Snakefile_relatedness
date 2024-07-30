@@ -22,13 +22,12 @@ rule run_relatedness2:
 rule off_diagnal_table:
     input:
         pairwiseReport = 'out.relatedness2',
+        totalSamp = postcalling_qc_dir + '/titv.txt'
     output:
         offDiagonalReport = relatedness_dir + '/out_off_diagonal.relatedness2'
-    params:
-        totalSamp = len(SAMPLES)
     shell:
-        'set +o pipefail; total={params.totalSamp};'
-        'for i in `seq 1 ${{total}}`;do samp=`echo "${{i}}*${{total}}+1" | bc -l`;order=`echo "${{total}}-${{i}}" | bc -l`; head -n ${{samp}} {input.pairwiseReport}| tail -n ${{order}};done  > {output.offDiagonalReport}'   
+        'set +o pipefail; total=$(cat {input.totalSamp} | wc -l);'
+        'for i in `seq 1 $(echo "${{total}}-1"|bc)`;do samp=`echo "${{i}}*${{total}}+1" | bc -l`;order=`echo "${{total}}-${{i}}" | bc -l`; head -n ${{samp}} {input.pairwiseReport}| tail -n ${{order}};done  > {output.offDiagonalReport}'   
 
 rule relatedness_plot:
     input:
