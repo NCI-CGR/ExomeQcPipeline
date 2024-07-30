@@ -36,7 +36,7 @@ fastNGSpanel: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genom
 fastNGSiInd: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
 refPlink: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
 refPlinkFam: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
-omniVcf: /DCEG/CGF/Bioinformatics/Production/BZhu/verifyBamID/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites_with_chr.vcf
+omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.exome.vcf.gz
 
 #fastNGSsite: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
 #fastNGSpanel: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt

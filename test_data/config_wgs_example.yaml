@@ -35,6 +35,6 @@ refPlinkFam: /CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integra
 # fastNGSiInd: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
 # refPlink: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
 # refPlinkFam: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
-omniVcf: /DCEG/CGF/Bioinformatics/Production/BZhu/verifyBamID/Omni25_genotypes_1525_samples_v2.b38.PASS.ALL.sites_with_chr.vcf
+omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b38.exome.vcf.gz
 
 
