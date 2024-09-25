@@ -111,12 +111,13 @@ rule average_depth_plot:
             '''        
         rTxt += '''
         library(ggplot2)
+        options(bitmapType='cairo')
         data_coverage <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
         sortData <- data_coverage[with(data_coverage, order(data_coverage$STATUS,data_coverage$COV)), ]
         downsample <- c("YES"=4, "NO"=19)
         png("''' + str(output.png_aveCov) + '''", 7, 7, "in", res = 300)
         gg <- ggplot(sortData, aes(x=factor(ANALYSISID, levels=unique(ANALYSISID)), y=COV)) 
-        gg + geom_point(aes(shape=as.factor(DOWNSAMPLE),color=as.factor(STATUS))) + 
+        gg + geom_point(aes(color=as.factor(STATUS))) + 
         scale_shape_manual(name="Downsample", values=downsample) +
         scale_color_manual(name="Status",values=colors) + 
         coord_cartesian(clip = 'off') +

@@ -35,7 +35,7 @@ fastqc_dir = 'fastqc'
 GROUPS=[]
 SAMPLES = []
 sampleGroupDict = {}
-CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal']
+CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
 
 ########################
 #Germline call
@@ -97,7 +97,6 @@ if config['MODE'] == 'somatic':
 
     include: 'modules_slurm/Snakefile_bam_matcher'
 
-print(PAIRS)
 #launch all rules    
 include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
 #include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
@@ -125,8 +124,9 @@ else:
     ensemble_vcf = config['ensemble_vcf']
     
     include: "modules_slurm/Snakemake_utils"
-    include: 'modules_slurm/Snakefile_relatedness'
+    #include: 'modules_slurm/Snakefile_relatedness'
     include: 'modules_slurm/Snakefile_postcalling_plot'
+    include: 'modules_slurm/Snakefile_relatedness'
 
 include: 'modules_slurm/Snakefile_doc'
     

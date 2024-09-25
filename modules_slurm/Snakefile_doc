@@ -62,29 +62,33 @@ rule qc_sample_summary:
     input:
         #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
         basechange = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic' else postcalling_qc_dir + '/titv.txt', 
-        single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()] #need to use for loop to include all sample single bam files
-
+        single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()], #need to use for loop to include all sample single bam files
+        bamMatcher = bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
+        contaminationTable = project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output'
     output:
         'word_doc/filtered_sample.txt'
     params:
         precallingReport,
-        project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
-        bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else []
+        #project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
+        #bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else []
     run:
+        a_file = pd.read_csv(input.basechange, sep='\t')
+        contamination_file = pd.read_csv(input.contaminationTable, sep='\t')
+        precalling_file = pd.read_csv(params[0], sep='\t')
         if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic':
             with open(output[0], 'w') as outfile: 
-                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tbammatcher_Rate\tFiltered' + '\n' )
-                a_file = pd.read_csv(input.basechange, sep='\t')
-                precalling_file = pd.read_csv(params[0], sep='\t')
-                contamination_file = pd.read_csv(params[1], sep='\t')
-                bammatcher_file = pd.read_csv(params[2], sep='\t')
-                for fname in input.single:                
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tbammatcher_Rate\tFiltered' + '\n' )                              
+                bammatcher_file = pd.read_csv(input.bamMatcher, sep='\t')
+                for fname in input.single:
                     analysisID = os.path.basename(fname)[:-4]
-                    aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['MEAN_COVERAGE']).split()[1]
+                    possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
+                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
+                    existing_columns = [col for col in possible_columns if col in filtered_df.columns]
+                    aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
                     preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
                     baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
-                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
-                    bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contrains.analysisID]['RATE']).split()[2]                    
+                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
+                    bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contains(analysisID)]['RATE']).split()[1]                    
                     if not a_file['FileName'].str.contains(analysisID).any():
                         outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t' + bammatcherRate + '\tY\n' )        
                     else:
@@ -92,20 +96,15 @@ rule qc_sample_summary:
         else:           
             with open(output[0], 'w') as outfile: 
                 outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tFiltered' + '\n' )
-                a_file = pd.read_csv(input.basechange, sep='\t')
-
-                precalling_file = pd.read_csv(params[0], sep='\t')
-                contamination_file = pd.read_csv(params[1], sep='\t')
-                for fname in input.single:                
+                for fname in input.single:                                  
                     analysisID = os.path.basename(fname)[:-4]
                     possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
                     filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
                     existing_columns = [col for col in possible_columns if col in filtered_df.columns]
-                    #aveDepth = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['AVG_COVERAGE']).split()[1]
                     aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
                     preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
                     baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
-                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
+                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
                     if not a_file.isin([analysisID]).any().any():
                         outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\tY\n' )
                     else:    
@@ -140,8 +139,10 @@ rule word_doc:
         relatedness = 'out.relatedness2' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         relatedness_hist = relatedness_dir + '/relatedness_hist.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         missingRate_hist = 'postcalling_qc/callRate_byGroup.jpeg' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
+        basechangeTxt = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/all_qual_basechange.txt',
         basechange = postcalling_qc_dir + '/basechange_3d.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else 'postcalling_qc/basechange_all.png',
         basechange_distribution = postcalling_qc_dir + '/basechange_distribution.png'  if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],
+        basechange_bar = postcalling_qc_dir + '/basechange_bar.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],  
         bam_matcher_plot = bamMatcher_dir + '/bam_matcher_check.png' if config['MODE'] == 'somatic' else []
     output:
         doc = 'word_doc/' + outName + '_QC_Report.docx', 
@@ -160,6 +161,7 @@ rule word_doc:
         fasqc = project.rstrip('/') + '/ExomeQcPipeline/fastqc/multiqc_report.html'
         groupBasechangeDir = project.rstrip('/') + '/ExomeQcPipeline/' + postcalling_qc_dir
         relatednessReport = project.rstrip('/') + '/ExomeQcPipeline/relatedness/out.relatedness2'
+        basechangeReport = project.rstrip('/') + '/ExomeQcPipeline/' + input.basechangeTxt
         rTxt = '''library(officer)
 library(magrittr)
 library(flextable)
@@ -280,6 +282,7 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     body_replace_all_text("FASTQC_REPORT", "''' + str(fasqc) + '''", fixed=TRUE) %>%
     body_replace_all_text("PRECALLING_QC_REPORT", "''' + str(precallingQCReport) + '''", fixed=TRUE) %>%
     body_replace_all_text("LASER_DIR", "''' + str(laserDir) + '''", fixed=TRUE) %>%
+    body_replace_all_text("BASECHANGE TABLE", "''' + str(basechangeReport) + '''", fixed=TRUE) %>%
     
     cursor_reach(keyword = "Table 1. Subject count breakdown before QC") %>%
     body_add_flextable(value = ft_1) %>%

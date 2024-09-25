@@ -8,9 +8,6 @@ ref: /DCEG/CGF/Resources/Data/genome/hg19_canonical_correct_chr_order.fa
 #capturekit: /DCEG/CGF/Bioinformatics/Production/data/hg38/BedFiles/Homo_sapiens_assembly38.bed
 capturekit: /DCEG/Projects/Exome/SequencingData/BED_FILES/seqcap_EZ_Exome_v3_v3utr_intersect_correct.bed
 
-exomeCQA_bed: /DCEG/CGF/Bioinformatics/Production/Wen/20180911_snakemake_coverage_tools/bedfiles/Intersect_v3_v3utr_capture_targets.bed
-exomeCQA: /DCEG/CGF/Bioinformatics/Production/software/ExomeCQA/ExomeCQA
-population_file: modules/HGDP/example.id #NA when no population file can be provided
 MODE: wes # wgs,wes, somatic, tumor_only
 tmpDir: /scratch/fz32402_qc
 

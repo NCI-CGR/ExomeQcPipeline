@@ -43,6 +43,7 @@ for f in $VCF_LIST; do
 
 	##############################
 	# Write base change file
+	SNP_COUNT=0
 	for i in "${array[@]}"
 	do
 	 for j in "${array[@]}"
@@ -60,20 +61,21 @@ for f in $VCF_LIST; do
 		 fi
 		 HEADER=`echo -e $HEADER"\t"$i">"$j`
 		 OUTPUT=`echo -e $OUTPUT"\t"$COUNT`
+		 SNP_COUNT=$(echo "$SNP_COUNT+$COUNT" | bc -l| xargs -I {} printf "%5.0f" {})
 	   fi
 	 done
 	done
-	HEADER=`echo -e $HEADER"\tIndels"`
+	HEADER=`echo -e $HEADER"\tSNPs\tIndels"`
 	if [[ $f == *"gz" ]]; then
 	#        echo "zcat $f | awk -F"\t" '\$1!~/^#/ && (length(\$4)>1 || length(\$5)>1) {print}' | wc -l"
-			COUNT=`zcat $f | awk -F"\t" '$1!~/^#/ && (length($4)>1 || length($5)>1) && ($7=="PASS" || $7=="LowQual") {print}' | wc -l`
+			INDEL_COUNT=`zcat $f | awk -F"\t" '$1!~/^#/ && (length($4)>1 || length($5)>1) && ($7=="PASS" || $7=="LowQual") {print}' | wc -l`
 	 #       COUNT=`zcat $f | awk -F"\t" '$1!~/^#/ && (length($4)>1 || length($5)>1) {print}' | wc -l`
 	else
 	#        COUNT=`awk -F"\t" -v r=$i -v a=$j '($7=="PASS" || $7=="LowQual") && $4==r && $5==a {print}' $f | wc -l`
 			#COUNT=`awk -F"\t" '$1!~/^#/ && (length($4)>1 || length($5)>1) && ($7=="PASS" || $7=="LowQual") {print}' $f | wc -l`
-			COUNT=`awk -F"\t" '$1!~/^#/ && (length($4)>1 || length($5)>1) {print}' $f | wc -l`
+			INDEL_COUNT=`awk -F"\t" '$1!~/^#/ && (length($4)>1 || length($5)>1) {print}' $f | wc -l`
 	fi
-	OUTPUT=`echo -e $OUTPUT"\t"$COUNT`
+	OUTPUT=`echo -e $OUTPUT"\t"$SNP_COUNT"\t"$INDEL_COUNT`
 
 
 	if [[ $FIRST == "true" ]]; then

@@ -27,7 +27,7 @@ from glob import glob
         
 rule run_basechange:
     input:
-        expand(postcalling_qc_dir + '/{sample}_intersection_region_passed.recode.vcf', sample = PAIRS)
+        expand(postcalling_qc_dir + '/{sample}_intersection_region_passed.recode.vcf', sample = PAIRS) if ( config['MODE'] == 'somatic' ) else expand(postcalling_qc_dir + '/{sample}_intersection_region_passed.recode.vcf', sample = SAMPLES)
     output:
         basechange = postcalling_qc_dir + '/ensemble_basechange.txt',
         vaf = postcalling_qc_dir + '/ensemble_vaf_dp.txt'        
@@ -37,21 +37,18 @@ rule run_basechange:
 rule basechange_plot:
     input:
         postcalling_qc_dir + '/ensemble_basechange.txt'  
-    output:
-        plot_3d = postcalling_qc_dir + '/basechange_3d.png',        
+    output: 
         plot_bar = postcalling_qc_dir + '/basechange_bar.png',    
         R = postcalling_qc_dir + '/basechange.R',
         Rout = postcalling_qc_dir + '/basechange.R.out'
     run:
         rTxt = '''
-        library(plotrix)
-        library(epade)
         library(ggplot2)
         library(reshape2)
         library(plyr)
-        
+        options(bitmapType='cairo')
         data <- read.table("''' + str(input) + '''", header = TRUE, sep = "	")
-
+        data <- data[, -ncol(data) + 1]  # Keep all columns except the second last
         names(data) <- c('sample', 'A>T','A>C','A>G','T>A','T>C','T>G','C>A','C>T','C>G','G>A', 'G>T', 'G>C', 'Indels')
         data.melt=melt(data)
         data.total=ddply(data.melt, "variable", numcolwise(sum))
@@ -67,19 +64,62 @@ rule basechange_plot:
         labs(x = "Samples", y = "Variant Count") +
         theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
         scale_fill_manual(values=c("#7FC97F","#BEAED4","#FDC086","#FFFF99","#386CB0","#F0027F","#BF5B17","#666666","#1B9E77","#D95F02","#7570B3","#E7298A","#66A61E"))
-        
-        data[,1] <-NULL
-        metrics<-as.matrix(data)
-        png("''' + str(output.plot_3d) + '''")
-        bar3d.ade(t(metrics), wall=3,xw=2, zw=1,alpha=0.2,col=c(14,2,3,4,5,6,7,8,9,10,11,12,13),xticks=seq(1, nrow(data)))
-        dev.off()
-        
+              
         dev.off()        
         '''
         with open(output.R, 'w') as R:
             R.write(rTxt)
         shell('R --vanilla < {output.R} > {output.Rout}')
-        
+
+rule basechange_3d_plot:
+    input:
+        postcalling_qc_dir + '/ensemble_basechange.txt'  
+    output:
+        plot_3d = postcalling_qc_dir + '/basechange_3d.png',
+    run:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        import numpy as np
+        import pandas as pd
+        df = pd.read_csv(input[0], sep='\t', index_col=0)
+        df = df.iloc[:, :-2].join(df.iloc[:, -1])  # Keep all columns except the second last
+        # Extract data
+        x_labels = df.index
+        z_labels = df.columns
+        values = df.values
+        # Create the 3D plot
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        # Colors for each column
+        colors = plt.cm.viridis(np.linspace(0, 1, len(z_labels)))
+        # Generate X and Z coordinates
+        x_pos, z_pos = np.meshgrid(range(len(x_labels)), range(len(z_labels)), indexing='ij')
+        x_pos = x_pos.flatten()
+        z_pos = z_pos.flatten()
+        y_pos = np.zeros_like(x_pos)  # Base level of y
+
+        # Flatten the values matrix
+        y_size = values.flatten()
+
+        proxy = []
+        # Create bars with different colors for each column
+        for i, z_label in enumerate(z_labels):
+            mask = (z_pos == i)
+            ax.bar3d(x_pos[mask], z_pos[mask], y_pos[mask], 1, 1, y_size[mask], color=colors[i], label=z_label, shade=True)
+            proxy.append(plt.Rectangle((0, 0), 1, 1, fc=colors[i]))
+
+        # Set labels
+        ax.set_xlabel('Samples')
+        ax.set_ylabel('Base Change Types')
+        ax.set_zlabel('Variant Counts')
+
+        # Set ticks
+        ax.set_yticks(range(len(z_labels)))
+        ax.set_yticklabels(z_labels)  
+          
+        ax.legend(proxy,['A>T','A>C','A>G','T>A','T>C','T>G','C>A','C>T','C>G','G>A','G>T','G>C','Indels'], loc="upper left")
+        plt.savefig(output[0])
+
 rule basechange_distribution_plot:
     input:
         postcalling_qc_dir + '/ensemble_vaf_dp.txt'  
@@ -101,7 +141,7 @@ rule basechange_distribution_plot:
                 )
             )
         }
-
+        options(bitmapType='cairo')
         png("''' + str(output.plot) + '''")
         ggplot(data=data, aes(x=data$BaseChange, y=VAF)) +
         geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),adjust=2,scale = "width", add = "boxplot")+ 

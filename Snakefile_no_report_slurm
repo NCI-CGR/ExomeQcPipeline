@@ -36,7 +36,7 @@ fastqc_dir = 'fastqc'
 GROUPS=[]
 SAMPLES = []
 sampleGroupDict = {}
-CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal']
+CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
 
 
 ########################
@@ -106,7 +106,7 @@ if config['MODE'] == 'somatic':
      
     include: 'modules_slurm/Snakefile_duplication_plot'
     
-    include: 'modules_slurm/Snakefile_exomeCQA_plot'
+    #include: 'modules_slurm/Snakefile_exomeCQA_plot'
   
     include: 'modules_slurm/Snakefile_fastqc'        
      
@@ -114,7 +114,8 @@ if config['MODE'] == 'somatic':
   
     include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']: 
-        ensemble_dir = config['ensemble_dir']    
+        ensemble_dir = config['ensemble_dir']   
+        include: "modules_slurm/Snakemake_utils"
         include: 'modules_slurm/Snakefile_postcalling_plot_somatic'
 elif config['MODE'] == 'tumor_only':
     
@@ -174,7 +175,8 @@ else:
         
 rule all:
     input:
-        ancestry_check_dir + '/procrustesPCASamples.png',
+        ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.png',
+        ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.png',
         #expand(ancestry_check_dir + '/Results_on_HGDP938_{group}.png', group = GROUPS) if ( config['MODE'] == 'wes' )  else [],
         bamMatcher_dir + '/bam_matcher_check.png' if ( config['MODE'] == 'somatic' ) else [],
         contamination_dir + '/bam_contamination_rate.png',

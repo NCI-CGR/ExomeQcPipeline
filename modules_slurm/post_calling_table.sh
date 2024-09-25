@@ -27,9 +27,9 @@ for i in $(awk '{if (NR >1 ) {print $1}}' ${REPORT} | cut -f1 -d_ | sort |uniq )
 	done
 done
 
-awk -F"\t" 'BEGIN{print "SAMPLE\tA>C\tA>G\tA>T\tC>A\tC>G\tC>T\tG>A\tG>C\tG>T\tT>A\tT>C\tT>G"} {if($1 in array){array[$1]=array[$1]"\t"$3} else {array[$1]=$3}} END {for (i in array) {print i"\t"array[i]}}' ${REPORT} > ${POST_CALL_DIR}/low_qual_basechange_tmp.txt
+awk -F"\t" 'BEGIN{print "SAMPLE\tA>C\tA>G\tA>T\tC>A\tC>G\tC>T\tG>A\tG>C\tG>T\tT>A\tT>C\tT>G"} {if($1 in array){array[$1]=array[$1]"\t"$3+$4+$5+$6+$7+$8+$12+$139+$10+$11+$12+$13} else {array[$1]=$3+$4+$5+$6+$7+$8+$12+$139+$10+$11+$12+$13}} END {for (i in array) {print i"\t"array[i]}}' ${REPORT} > ${POST_CALL_DIR}/low_qual_basechange_tmp.txt
 
-(head -n 1 ${POST_CALL_DIR}/low_qual_basechange_tmp.txt && tail -n +2 ${POST_CALL_DIR}/low_qual_basechange_tmp.txt | sort ) > ${POST_CALL_DIR}/low_qual_basechange.txt
+(head -n 1 ${POST_CALL_DIR}/low_qual_basechange_tmp.txt && tail -n +2 ${POST_CALL_DIR}/low_qual_basechange_tmp.txt | sort ) > ${POST_CALL_DIR}/all_qual_basechange.txt
 rm ${POST_CALL_DIR}/low_qual_basechange_tmp.txt
 
 
