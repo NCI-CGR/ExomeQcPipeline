@@ -6,7 +6,7 @@ DATE=$(date +%y%m%d)
 mkdir -p logs_${DATE}
 
 
-snakemake --unlock -s Snakefile_no_report_slurm --configfile modules/config.yaml
+snakemake --unlock -s Snakefile_no_report_slurm --configfile modules_slurm/config.yaml
 
 #sbcmd="qsub -cwd -q {cluster.q} -pe by_node {threads} -o logs_${DATE}/ -e logs_${DATE}/ -V"
 sbcmd="sbatch --time=8:00:00 --mem=64g --partition=bigmemq --cpus-per-task={threads} --output=logs_${DATE}/snakejob_%j.out"

@@ -12,12 +12,12 @@ rule run_verifyBamID:
         match = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}.bestSM'
     params:
         outDir = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}',
-        ref = refFile
+        ref = refFile,
         omnivcf = config['omniVcf']
     singularity: "docker://griffan/verifybamid2"
     shell:
         #'/DCEG/CGF/Bioinformatics/Production/BZhu/bin/verifyBamID_1.1.0/verifyBamID/bin/verifyBamID --ignoreRG --chip-none --precise --best --vcf {params.omnivcf} --bam {input} --out {params.outDir}'     
-        VerifyBamID --BamFile {input} --UDPath {params.omnivcf}.dat.UD --BedPath {params.omnivcf}.dat.bed --MeanPath {params.omnivcf}.dat.mu --Reference {params.ref} --Output {params.outDir}'
+        'VerifyBamID --BamFile {input} --UDPath {params.omnivcf}.dat.UD --BedPath {params.omnivcf}.dat.bed --MeanPath {params.omnivcf}.dat.mu --Reference {params.ref} --Output {params.outDir}'
 
 rule sum_verifyBamID:
     input:
