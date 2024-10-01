@@ -32,6 +32,7 @@ rule caller_concordance:
         postcalling_qc_dir + '/caller_concordance.txt'
     params:
         bedFile    
+    threads: 8    
     shell:
         '''
         module load bcftools;
@@ -74,7 +75,7 @@ rule caller_venn_diagram:
 rule pca:
     input:
         vcf = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz',
-        pca = ancestry_check_dir + '/procrustesPCASamples.txt'
+        pca = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.txt'
     output:
         eigenVal = postcalling_qc_dir + '/variants_annotated_majority_intersect.common.eur.eigenval',
         plotPC = postcalling_qc_dir + '/PC1-PC2.pdf',

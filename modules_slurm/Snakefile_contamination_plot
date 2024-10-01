@@ -50,6 +50,7 @@ rule contamination_plot:
     run:
         rTxt = '''
         data_contamination <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
+        options(bitmapType='cairo')
         png("''' + str(output.png_contamination) + '''")
         sortData <- data_contamination[with(data_contamination, order(data_contamination$Contamination_rate)), ]
         plot(sortData$Contamination_rate, xlab="Samples", ylab="Bam Contamination Rate(%)", pch=20, cex = 0.4, yaxt="n")

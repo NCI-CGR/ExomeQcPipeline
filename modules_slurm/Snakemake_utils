@@ -25,6 +25,7 @@ else:
             index = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz.tbi'
         params:    
             bed = '--regions-file ' + bedFile if (config['MODE'] == 'wes') else []
+        threads: 10    
         shell:
             '. /etc/profile.d/modules.sh; module load bcftools tabix;'
             #'''cat {input} | java -Xmx16g -jar /DCEG/CGF/Bioinformatics/Analysis/public_v2/snpEff/SnpSift.jar filter "( ( FILTER =~ '2') | ( FILTER =~ '3') )" | java -Xmx16g -jar /DCEG/CGF/Bioinformatics/Analysis/public_v2/snpEff/SnpSift.jar intervals {params.bed} > {params.vcf};'''

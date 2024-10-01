@@ -70,6 +70,7 @@ rule gender_plot:
         library(ggplot2)
         library(dplyr)
         data_gender <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
+        options(bitmapType='cairo')
         png("''' + str(output.png_gender) + '''", 6.5, 6.5, "in", res = 300)
         colors <- c("Male"=rgb(0, 0, 1, .3), "Unknown"=rgb(1, 0, 0, .3), "Female"=rgb(0, 1, 0, .3),"Other"=rgb(.75, .75, .75, .3) )
         sortData <- arrange(data_gender, IDENTIFILER_GENDER, YXratio)

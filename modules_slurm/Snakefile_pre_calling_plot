@@ -23,6 +23,7 @@ rule pre_calling_plot:
     run:
         rTxt = '''
         library(ggplot2)
+        options(bitmapType='cairo')
         data_precalling <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
         png("''' + str(output.png_aritifact) + '''")
         boxplot(data_precalling$LOWEST_PREADATPER_TOTAL_QSCORE,data_precalling$LOWEST_BAITBIAS_TOTAL_QSCORE, names = c("Preadapter Artifact", "Baitbias Artifact"),ylab = "LOWEST_TOTAL_QSCORE", main = "CollectSequencingArtifactMetrics",  outline=FALSE)
