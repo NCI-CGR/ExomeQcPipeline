@@ -12,16 +12,16 @@ Also the pipeline has two branches: report generation branch and non report gene
 
 ## Input Requirement:
 
-__None report branch:__
+__BAM level QC branch:__
 - Fill the config file modules_slurm/config.yaml
   - Build manifest file
   - Bam-matcher_check: fill pair.txt if for somatic pair mode
   - pre_calling_check: fill pre-calling qc 
   - postcalling_check: fill ensemble_dir TRUE
 
-__Report branch:__
+__VCF level QC branch:__
 - Fill all items in modules/config.yaml
-  - Manifest for for the build
+  - Manifest for the build
   - Input bam file folder (bam files from different groups should be is different subfolders)
   - Pre-calling qc report from secondary analysis pipeline
   - Capturekit bed file (somatic and wes only)
@@ -29,32 +29,85 @@ __Report branch:__
   - paired tumor normal folder paith with files following "_5callers_voting_PASS.vcf" suffix(somatic mode only)
   - tumor only input folder paith with files following "_WES_PON_passed.vcf" suffix(tumor only mode only)
 
+## Exected Output:
+__BAM level QC branch:__
+
+├── ancestry
+│   ├── procrustesPCASamples_PC1-PC2.png
+│   ├── procrustesPCASamples_PC1-PC2.txt
+│   ├── procrustesPCASamples_PC3-PC4.png
+│   └── procrustesPCASamples_PC3-PC4.txt
+├── bamContamination
+│   ├── bam_contamination_rate.png
+│   └── top10_contamination_rate.txt
+├── coverage
+│   ├── Average_Coverage_caco.png
+├── deduplication
+│   ├── lane_dup_rate.png
+│   └── top10_dup_rate.txt
+├── fastqc
+│   └── multiqc_report.html
+├── gender_check
+│   └── sex_check.png
+├── precalling_qc
+│   ├── fold80.png
+│   ├── insertSize.png
+│   ├── oxidation.png
+│   └── seq_artifact.png
+└── word_doc
+    └──filtered_sample.txt
+
+__VCF level QC branch:__
+
+├── postcalling_qc
+│   ├── basechange_all.png
+│   ├── callRate_byGroup.jpeg
+│   ├── callRate_bychr.jpeg
+│   ├── callRate_bychr.txt
+│   ├── titv.txt
+│   ├── titv_ratio.png
+│   ├── variant_count.png
+│   ├── variant_count_perKB.png
+│   └── variant_outlier10.txt
+├── relatedness
+│   ├── out_off_diagonal.relatedness2
+│   ├── relatedness.png
+│   └── relatedness_hist.png
+└── word_doc
+    ├── build_germline_pipeline_V3_testing_QC_Report.docx
+    ├── filtered_sample.txt
+    └── sample_summary.txt
+
 
 ## How to run:
 
-__None report branch:__
+__BAM level branch:__
 1. Create ExomeQcPipeline folder under build directory and download this repo to the ExomeQcPipeline folder
 2. Modify all parameters in `modules_slurm/config.yaml`
 3. run `sh run_snakefile_no_report.sh`
 
-__Report branch:__
+__VCF level branch:__
 1. Create ExomeQcPipeline folder under build directory and download this repo to the ExomeQcPipeline folder
 2. Modify all parameters in `modules_slurm/config.yaml`
 3. run `sh run_snakefile_report.sh`
 
 ## Test dataset:
 
-__germline:__
+__germline WES:__
   - 72 Giab controls sample testing build: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/QC/
-  
-  1. run `mv test/config_germline_example.yaml modules/config.yaml`
-  2. run `mv test/config_no_report_germline_example.yaml modules/config_no_report.yaml`
+  - run `mv test_data/config_wes.yaml modules/config.yaml`
 
-__somatic:__
-  - Breast cancer tumor normal buildL /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/QC/
+__germline WGS:__
+  - 4 Covid wgs samples: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/QC
+  - run `mv test_data/config_wgs_example.yaml modules/config.yaml`
   
-  1. run `mv test/config_somatic_example.yaml modules/config.yaml`
-  2. run `mv test/config_no_report_somatic_example.yaml modules/config_no_report.yaml`
+__somatic pair:__
+  - Breast cancer tumor normal build /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/QC/
+  - run `mv test_data/config_somatic_example.yaml modules/config.yaml`
+  
+__somatic pair:__
+  - Chernobyl thyroid build /DCEG/Projects/Exome/builds/build_SR0586-001_WTC_Chernobyl_Thyroid_33381/QC
+  - run `mv test_data/config_tumorOnly.yaml modules/config.yaml`
 
 ## Possible errors:
 
