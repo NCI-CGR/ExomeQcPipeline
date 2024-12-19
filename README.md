@@ -31,7 +31,7 @@ __VCF level QC branch:__
 
 ## Exected Output:
 __BAM level QC branch:__
-
+```
 ├── ancestry
 │   ├── procrustesPCASamples_PC1-PC2.png
 │   ├── procrustesPCASamples_PC1-PC2.txt
@@ -56,9 +56,10 @@ __BAM level QC branch:__
 │   └── seq_artifact.png
 └── word_doc
     └──filtered_sample.txt
+```
 
 __VCF level QC branch:__
-
+```
 ├── postcalling_qc
 │   ├── basechange_all.png
 │   ├── callRate_byGroup.jpeg
@@ -77,7 +78,7 @@ __VCF level QC branch:__
     ├── build_germline_pipeline_V3_testing_QC_Report.docx
     ├── filtered_sample.txt
     └── sample_summary.txt
-
+```
 
 ## How to run:
 
