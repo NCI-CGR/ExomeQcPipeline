@@ -134,5 +134,6 @@ rule all:
     input:
         bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
         basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [], 
+        PCA = postcalling_qc_dir + '/PC1-PC2.pdf' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         QCreport = 'word_doc/filtered_sample.txt',
         word_report = 'word_doc/' + outName + '_QC_Report.docx'

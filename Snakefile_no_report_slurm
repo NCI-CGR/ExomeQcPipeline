@@ -126,7 +126,6 @@ elif config['MODE'] == 'tumor_only':
     include: 'modules_slurm/Snakefile_coverage_plot'
     
     include: 'modules_slurm/Snakefile_duplication_plot'
-
       
     include: 'modules_slurm/Snakefile_fastqc'        
 
@@ -171,7 +170,8 @@ else:
 # include: 'modules_slurm/Snakefile_duplication_plot'
 # include: 'modules_slurm/Snakefile_exomeCQA_plot'
 # include: 'modules_slurm/Snakefile_gender_plot'
-# include: 'modules_slurm/Snakefile_pre_calling_plot'        
+# include: 'modules_slurm/Snakefile_pre_calling_plot'  
+include: 'modules_slurm/Snakefile_doc'
         
 rule all:
     input:
@@ -200,5 +200,6 @@ rule all:
         postcalling_qc_dir + '/basechange_3d.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],        
         postcalling_qc_dir + '/basechange_distribution.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],
         'relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'wgs' ) or ( config['relatedness_check'] and config['MODE'] == 'wes' ) else [],
-        'fastqc/multiqc_report.html'
+        'fastqc/multiqc_report.html',
+        'word_doc/bam_stat.txt'
  

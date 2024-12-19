@@ -42,6 +42,7 @@ rule relatedness_plot:
         rTxt = '''
         library(ggplot2)
         data_relatedness <- read.table("''' + str(input.pairwiseReport) + '''", header = TRUE, sep = "\t")
+        options(bitmapType='cairo')
         png("''' + str(output.png_relatedness) + '''", 6.5, 6.5, "in", res = 300)
         ggplot(data_relatedness, aes(y=INDV2, x=INDV1) ) + geom_tile(aes(fill = log(RELATEDNESS_PHI,0.5)),colour = "green") +
         scale_fill_gradient(low = "green",high = "red") +
