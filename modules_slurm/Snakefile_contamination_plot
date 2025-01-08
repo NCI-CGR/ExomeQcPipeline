@@ -9,7 +9,7 @@ rule run_verifyBamID:
         getBam
     output:
         out1 = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}.selfSM',
-        match = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}.bestSM'
+        #match = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}.bestSM'
     params:
         outDir = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}',
         ref = refFile,
