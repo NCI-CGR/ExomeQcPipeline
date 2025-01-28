@@ -21,7 +21,7 @@ precallingReport = config['precalling_report']
 #exomeCQAgeneReport = config['exomCQA_gene']
 #exomeCQAexonReport = config['exomCQA_exon']
 
-gender_check_dir = 'gender_check'
+sex_check_dir = 'sex_check'
 postcalling_qc_dir = 'postcalling_qc'
 coverage_dir = 'coverage'
 contamination_dir = 'bamContamination'
@@ -114,7 +114,7 @@ include: 'modules/Snakefile_fastqc'
 if not config['MODE'] == 'wgs':
     include: 'modules/Snakefile_exomeCQA_plot'
     
-include: 'modules/Snakefile_gender_plot'
+include: 'modules/Snakefile_sex_plot'
 include: 'modules/Snakefile_pre_calling_plot'
 
 if config['MODE'] == 'somatic':
