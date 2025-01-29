@@ -14,8 +14,14 @@ fi
 
 DIR=$(dirname $VCF)
 NAME=$(basename $VCF .vcf.gz)
+HAS_HC_AF=$(bcftools view -h $VCF | grep HC_AF | wc -l)
 
-bcftools view -f threeCallers,twoCallers -i '(INFO/HC_AF > 0.05) || (INFO/DV_AF > 0.05 )' --types snps $PARAMS -Oz -o ${DIR}/${NAME}.common.eur.vcf.gz $VCF
+if [[ ${HAS_HC_AF} > 0 ]]; then
+	bcftools view -f threeCallers,twoCallers -i '(INFO/HC_AF > 0.05) || (INFO/DV_AF > 0.05 )' --types snps $PARAMS -Oz -o ${DIR}/${NAME}.common.eur.vcf.gz $VCF
+else
+	bcftools view -f 2,3,PASS -i '(INFO/AF > 0.05 )' --types snps $PARAMS -Oz -o ${DIR}/${NAME}.common.eur.vcf.gz $VCF
+fi
+
 tabix -p vcf ${DIR}/${NAME}.common.eur.vcf.gz 
 
 plink2 --vcf ${DIR}/${NAME}.common.eur.vcf.gz  --double-id --allow-extra-chr --set-missing-var-ids @:#\$1,\$2 --indep-pairwise 50 10 0.1 --vcf-half-call m --out ${DIR}/${NAME}
