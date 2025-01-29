@@ -23,7 +23,7 @@ ensemble_dir: /DCEG/Projects/Exome/builds/build_SR0586-001_WTC_Chernobyl_Thyroid
 
 ##flags
 post_calling_check: FALSE
-relatedness_check: TRUE
+relatedness_check: FALSE
 
 ##parameter files
 #fastNGSsite: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
