@@ -21,7 +21,7 @@ precallingReport = config['precalling_report']
 #exomeCQAgeneReport = config['exomCQA_gene']
 #exomeCQAexonReport = config['exomCQA_exon']
 
-sex_check_dir = 'gender_check'
+sex_check_dir = 'sex_check'
 postcalling_qc_dir = 'postcalling_qc'
 coverage_dir = 'coverage'
 contamination_dir = 'bamContamination'
@@ -110,7 +110,7 @@ if config['MODE'] == 'somatic':
   
     include: 'modules_slurm/Snakefile_fastqc'        
      
-    include: 'modules_slurm/Snakefile_gender_plot'
+    include: 'modules_slurm/Snakefile_sex_plot'
   
     include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']: 
@@ -129,7 +129,7 @@ elif config['MODE'] == 'tumor_only':
       
     include: 'modules_slurm/Snakefile_fastqc'        
 
-    include: 'modules_slurm/Snakefile_gender_plot'
+    include: 'modules_slurm/Snakefile_sex_plot'
        
     include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']:  
@@ -151,7 +151,7 @@ else:
   
     include: 'modules_slurm/Snakefile_fastqc'           
       
-    include: 'modules_slurm/Snakefile_gender_plot'
+    include: 'modules_slurm/Snakefile_sex_plot'
     
     include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']:   
@@ -169,7 +169,7 @@ else:
 # include: 'modules_slurm/Snakefile_coverage_plot'
 # include: 'modules_slurm/Snakefile_duplication_plot'
 # include: 'modules_slurm/Snakefile_exomeCQA_plot'
-# include: 'modules_slurm/Snakefile_gender_plot'
+# include: 'modules_slurm/Snakefile_sex_plot'
 # include: 'modules_slurm/Snakefile_pre_calling_plot'  
 include: 'modules_slurm/Snakefile_doc'
         
