@@ -12,7 +12,7 @@ outName = os.path.basename(os.path.dirname(config['project']))
 bam_location = config['bam_location']
 
 
-project = config['project']
+project = config['project'].rstrip("/")
 manifest = config['manifest']
 refFile = config['ref']
 #populationFile = config['population_file']
@@ -21,17 +21,16 @@ precallingReport = config['precalling_report']
 #exomeCQAgeneReport = config['exomCQA_gene']
 #exomeCQAexonReport = config['exomCQA_exon']
 
-sex_check_dir = 'sex_check'
-postcalling_qc_dir = 'postcalling_qc'
-coverage_dir = 'coverage'
-contamination_dir = 'bamContamination'
-ancestry_check_dir = 'ancestry'
-exomeCQA_dir = 'exomeCQA'
-hgdpDir = 'modules_slurm/HGDP'
-deduplication_dir = 'deduplication'
-precalling_dir = 'precalling_qc'
-relatedness_dir = 'relatedness'
-fastqc_dir = 'fastqc'
+sex_check_dir = project + '/sex_check'
+postcalling_qc_dir = project + '/postcalling_qc'
+coverage_dir = project + '/coverage'
+contamination_dir = project + '/bamContamination'
+ancestry_check_dir = project + '/ancestry'
+exomeCQA_dir = project + '/exomeCQA'
+deduplication_dir = project + '/deduplication'
+precalling_dir = project + '/precalling_qc'
+relatedness_dir = project + '/relatedness'
+fastqc_dir = project + '/fastqc'
 
 GROUPS=[]
 SAMPLES = []
@@ -100,10 +99,10 @@ if config['MODE'] == 'somatic':
 
     include: 'modules_slurm/Snakefile_bam_matcher'
      
-    include: 'modules_slurm/Snakefile_contamination_plot'
-     
     include: 'modules_slurm/Snakefile_coverage_plot'
-     
+
+    include: 'modules_slurm/Snakefile_contamination_plot'
+        
     include: 'modules_slurm/Snakefile_duplication_plot'
     
     #include: 'modules_slurm/Snakefile_exomeCQA_plot'
@@ -120,11 +119,11 @@ if config['MODE'] == 'somatic':
 elif config['MODE'] == 'tumor_only':
     
     include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
-     
-    include: 'modules_slurm/Snakefile_contamination_plot'
-      
-    include: 'modules_slurm/Snakefile_coverage_plot'
     
+    include: 'modules_slurm/Snakefile_coverage_plot'
+
+    include: 'modules_slurm/Snakefile_contamination_plot'
+         
     include: 'modules_slurm/Snakefile_duplication_plot'
       
     include: 'modules_slurm/Snakefile_fastqc'        
@@ -142,11 +141,11 @@ else:
 #        include: 'modules_slurm/Snakefile_ancestry_plot_laser'
 #    if (config['MODE'] == 'wgs'):           
     include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix' 
-         
-    include: 'modules_slurm/Snakefile_contamination_plot'       
-     
+    
     include: 'modules_slurm/Snakefile_coverage_plot'
-       
+
+    include: 'modules_slurm/Snakefile_contamination_plot'       
+            
     include: 'modules_slurm/Snakefile_duplication_plot'
   
     include: 'modules_slurm/Snakefile_fastqc'           
@@ -199,7 +198,7 @@ rule all:
         postcalling_qc_dir + '/callRate_byGroup.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
         postcalling_qc_dir + '/basechange_3d.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],        
         postcalling_qc_dir + '/basechange_distribution.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],
-        'relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'wgs' ) or ( config['relatedness_check'] and config['MODE'] == 'wes' ) else [],
-        'fastqc/multiqc_report.html',
-        'word_doc/bam_stat.txt'
+        project + '/relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'wgs' ) or ( config['relatedness_check'] and config['MODE'] == 'wes' ) else [],
+        project + '/fastqc/multiqc_report.html',
+        project + '/word_doc/bam_stat.txt'
  

@@ -48,20 +48,21 @@ rule XYratio_table:
             next(manifest)
             for line in manifest:
                key = line.split(',')[6] + '_' + line.split(',')[12]
-               sexDic[key] = line.split(',')[9]
+               sexDic[key] = (line.split(',')[8],line.split(',')[9])
         with open(params.merged_table, 'r') as infile, open(output[0], 'w') as outfile:
-            outfile.write( 'SAMPLE\tChrX\tChrY\tIDENTIFILER_sex\tYXratio' + '\n' )
+            outfile.write( 'SAMPLE\tChrX\tChrY\tREPORT_SEX\tIDENTIFILER_SEX\tYXratio' + '\n' )
             for line in infile:
                 ratio = float(line.split('\t')[2])/float(line.split('\t')[1])
                 value = sexDic.get(line.split('\t')[0].strip())
                 if value is not None:
-                    outfile.write(line.strip() + '\t' + value.replace("F","Female").replace("M","Male").replace("N","Unknown") + '\t' + str(ratio) + '\n')
+                    outfile.write(line.strip() + '\t' + "\t".join([str(i) for i in value]).replace("F","Female").replace("M","Male").replace("N","Unknown") + '\t' + str(ratio) + '\n')
 
 rule sex_plot:
     input:
         sex_check_dir + '/XYratio_table.txt'
     output:
         png_sex = sex_check_dir + '/sex_check.png',
+        png_self_sex = sex_check_dir + '/sex_self_check.png',
         outlier_table = sex_check_dir + '/sex_outlier.txt',
         R = sex_check_dir + '/sex_check.R',
         Rout = sex_check_dir + '/sex_check.R.out'
@@ -73,21 +74,36 @@ rule sex_plot:
         options(bitmapType='cairo')
         png("''' + str(output.png_sex) + '''", 6.5, 6.5, "in", res = 300)
         colors <- c("Male"=rgb(0, 0, 1, .3), "Unknown"=rgb(1, 0, 0, .3), "Female"=rgb(0, 1, 0, .3),"Other"=rgb(.75, .75, .75, .3) )
-        sortData <- arrange(data_sex, IDENTIFILER_sex, YXratio)
-        maledata <- subset(sortData, IDENTIFILER_sex=="Male", select=YXratio)
-        femaledata <- subset(sortData, IDENTIFILER_sex=="Female", select=YXratio)
+        sortData <- arrange(data_sex, IDENTIFILER_SEX, YXratio)
+        maledata1 <- subset(sortData, IDENTIFILER_SEX=="Male", select=YXratio)
+        femaledata1 <- subset(sortData, IDENTIFILER_SEX=="Female", select=YXratio)
 
         gg <- ggplot(sortData, aes(x=factor(SAMPLE, levels=unique(SAMPLE)), y=YXratio)) 
-        gg + geom_point(aes(color=as.factor(IDENTIFILER_sex))) + 
+        gg + geom_point(aes(color=as.factor(IDENTIFILER_SEX))) + 
         scale_color_manual(name="Sex",values=colors) + 
         labs(x = "subjects", y = "ChrY/ChrX Reads Ratio") +
         theme(legend.position=c(0.1, 0.9),axis.text.x=element_blank(),axis.ticks.x=element_blank())+
         theme(axis.line = element_line(size = 1, colour = "grey"),panel.background = element_rect(fill = "white")) +
-        geom_hline(yintercept = colMeans(femaledata)+sd(femaledata$YXratio), color=rgb(0, 1, 0, .3)) +
-        geom_hline(yintercept = colMeans(maledata)-sd(maledata$YXratio),color=rgb(0, 0, 1, .3))
-        outlier <- subset(sortData, IDENTIFILER_sex==3&YXratio<=colMeans(femaledata)+sd(femaledata$YXratio)|IDENTIFILER_sex==1&YXratio>=colMeans(maledata)-sd(maledata$YXratio))
+        geom_hline(yintercept = colMeans(femaledata1)+sd(femaledata1$YXratio), color=rgb(0, 1, 0, .3)) +
+        geom_hline(yintercept = colMeans(maledata1)-sd(maledata1$YXratio),color=rgb(0, 0, 1, .3))
+
+        png("''' + str(output.png_self_sex) + '''", 6.5, 6.5, "in", res = 300)
+        sortData <- arrange(data_sex, REPORT_SEX, YXratio)
+        maledata2 <- subset(sortData, REPORT_SEX=="Male", select=YXratio)
+        femaledata2 <- subset(sortData, REPORT_SEX=="Female", select=YXratio)
+
+        gg <- ggplot(sortData, aes(x=factor(SAMPLE, levels=unique(SAMPLE)), y=YXratio))
+        gg + geom_point(aes(color=as.factor(REPORT_SEX))) +
+        scale_color_manual(name="Sex",values=colors) +
+        labs(x = "subjects", y = "ChrY/ChrX Reads Ratio") +
+        theme(legend.position=c(0.1, 0.9),axis.text.x=element_blank(),axis.ticks.x=element_blank())+
+        theme(axis.line = element_line(size = 1, colour = "grey"),panel.background = element_rect(fill = "white")) +
+        geom_hline(yintercept = colMeans(femaledata2)+sd(femaledata2$YXratio), color=rgb(0, 1, 0, .3)) +
+        geom_hline(yintercept = colMeans(maledata2)-sd(maledata2$YXratio),color=rgb(0, 0, 1, .3))
+        
+        outlier <- subset(sortData, IDENTIFILER_SEX=="Male"&YXratio<=colMeans(femaledata1)+sd(femaledata1$YXratio)|IDENTIFILER_SEX=="Female"&YXratio>=colMeans(maledata1)-sd(maledata1$YXratio)|REPORT_SEX=="Male"&YXratio<=colMeans(femaledata2)+sd(femaledata2$YXratio)|REPORT_SEX=="Female"&YXratio>=colMeans(maledata2)-sd(maledata2$YXratio))
         sink("''' + str(output.outlier_table) + '''")
-        print(outlier[,c(1,4,5)])
+        print(outlier[,c(1,4,5,6)])
         sink()      
         '''
         with open(output.R, 'w') as R:

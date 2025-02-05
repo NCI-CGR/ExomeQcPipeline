@@ -15,7 +15,7 @@ ensemble_vcf: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/QC
 doc_template_germline: ExomeQcPipeline_Template_interim.docx
 
 ##somatic required files
-BamMatcher: /CGF/Bioinformatics/Production/software/bam-matcher.py
+BamMatcher: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/bam-matcher3.py
 pairs: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Manifest/pairs.txt
 doc_template_somatic: ExomeQcPipeline_Somatic_Template_interim.docx
 ensemble_dir: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Results/Ensemble
@@ -25,11 +25,11 @@ post_calling_check: TRUE
 relatedness_check: FALSE
 
 ##parameter files
-fastNGSsite: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
-fastNGSpanel: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-fastNGSiInd: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-refPlink: /CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
-refPlinkFam: /CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
+fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
+fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
+fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
+refPlink: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
+refPlinkFam: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
 # fastNGSsite: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel_chr.sites
 # fastNGSpanel: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/refPanel_1000genomesRefPanel.txt
 # fastNGSiInd: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt

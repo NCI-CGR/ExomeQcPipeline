@@ -9,19 +9,19 @@ rule run_relatedness2:
         postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz'
     output:
 #        offDiagonalReport = relatedness_dir + '/out_off_diagonal.relatedness2',
-        pairwiseReport = 'out.relatedness2'
-#    params:
-#        totalSamp = len(SAMPLES)  
+        pairwiseReport = relatedness_dir + '/out.relatedness2'
+    params:
+        prefix = relatedness_dir + '/out'  
     singularity: "docker://biocontainers/vcftools:v0.1.16-1-deb_cv1"
     shell:
         #'. /etc/profile.d/modules.sh; module load zlib vcftools;'       
-        'vcftools --gzvcf {input} --relatedness2;'
+        'vcftools --gzvcf {input} --relatedness2 --out {params.prefix};'
 
 #tail command is giving the non-zero exit code error
 #https://stackoverflow.com/questions/46569236/handling-sigpipe-error-in-snakemake
 rule off_diagnal_table:
     input:
-        pairwiseReport = 'out.relatedness2',
+        pairwiseReport = relatedness_dir + '/out.relatedness2',
         totalSamp = postcalling_qc_dir + '/titv.txt'
     output:
         offDiagonalReport = relatedness_dir + '/out_off_diagonal.relatedness2'
