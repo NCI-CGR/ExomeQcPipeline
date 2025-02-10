@@ -8,7 +8,7 @@ rule myfastqc:
     input:
         getBam
     output:
-        'fastqc/{sample}_fastqc.html'
+        project + '/fastqc/{sample}_fastqc.html'
     params:
         outdir = 'fastqc',
         tmpdir = config['tmpDir']
@@ -18,13 +18,13 @@ rule myfastqc:
 
 rule multiqc:
     input:
-        expand('fastqc/{sample}_fastqc.html', sample = SAMPLES)
+        expand(project + '/fastqc/{sample}_fastqc.html', sample = SAMPLES)
     output:
-        'fastqc/multiqc_report.html'
+        project + '/fastqc/multiqc_report.html'
     params:
         outdir = 'fastqc'    
     singularity: "docker://ewels/multiqc:latest"
     shell:
         #'. /etc/profile.d/modules.sh; module load python/2.7.8;'
-        'cd {params.outdir}; multiqc -d -s .'
+        'cd {params.outdir}; multiqc -d --force -s .'
 

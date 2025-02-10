@@ -84,5 +84,5 @@ rule doProcastesPCA:
     shell:
         '. /etc/profile.d/modules.sh; module load R;'    
         'Rscript /CGF/Bioinformatics/Production/software/fastNGSadmix/R/doProcastesPCA.R {params.dir} {params.ref} {input.list} Samples;'
-        'mv procrustesPCASamples.* {params.dir}'        
+        'mv procrustesPCASamples_* {params.dir}'        
     

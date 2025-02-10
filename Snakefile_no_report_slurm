@@ -160,6 +160,7 @@ else:
     if config['relatedness_check']:           
         ensemble_vcf = config['ensemble_vcf']
         include: "modules_slurm/Snakemake_utils"
+        include: 'modules_slurm/Snakefile_postcalling_plot'
         include: 'modules_slurm/Snakefile_relatedness'
         
 # include: 'modules_slurm/Snakefile_ancestry_plot'

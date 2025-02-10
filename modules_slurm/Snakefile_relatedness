@@ -31,7 +31,7 @@ rule off_diagnal_table:
 
 rule relatedness_plot:
     input:
-        pairwiseReport = 'out.relatedness2',
+        pairwiseReport = relatedness_dir + '/out.relatedness2',
         offDiagonalReport = relatedness_dir + '/out_off_diagonal.relatedness2'
     output:
         png_relatedness = relatedness_dir + '/relatedness.png',

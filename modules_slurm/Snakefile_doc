@@ -8,7 +8,7 @@ if config['MODE'] == 'somatic':
         input:
             pair_manifest
         output:
-            'word_doc/sample_summary.txt'
+            project + '/word_doc/sample_summary.txt'
         run:
             GroupTumorDict = {}
             GroupNormalDict = {}
@@ -38,7 +38,7 @@ else:
             basechange = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/titv.txt',
             single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()] #need to use for loop to include all sample single bam files
         output:
-            'word_doc/sample_summary.txt' 
+            project + '/word_doc/sample_summary.txt' 
         run:
             GroupDict = {}
             with open(output[0], 'w') as outfile: 
@@ -65,7 +65,7 @@ rule qc_sample_summary1:
         bamMatcher = bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
         contaminationTable = project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output'
     output:
-        'word_doc/bam_stat.txt'
+        project + '/word_doc/bam_stat.txt'
     params:
         precallingReport,
         #project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
@@ -110,7 +110,7 @@ rule qc_sample_summary:
         bamMatcher = bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
         contaminationTable = project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output'
     output:
-        'word_doc/filtered_sample.txt'
+        project + '/word_doc/filtered_sample.txt'
     params:
         precallingReport,
         #project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
@@ -162,7 +162,7 @@ rule word_doc:
         contamination_plot = project + '/bamContamination/bam_contamination_rate.png',
         top10_contamination = project + '/bamContamination/top10_contamination_rate.txt',
         aveCov_plot = project + '/coverage/Average_Coverage_caco.png', 
-        sex_plot = project + '/gender_check/sex_self_check.png',
+        sex_plot = project + '/sex_check/sex_self_check.png',
         ancestry_plot1 = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.png',
         ancestry_plot2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.png',
         subject_dup_plot = project + '/deduplication/subject_dup_rate.png',
@@ -182,16 +182,16 @@ rule word_doc:
         botton10_titv = project + '/postcalling_qc/titv_outlier10.txt' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         relatedness = relatedness_dir + '/out.relatedness2' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         relatedness_hist = relatedness_dir + '/relatedness_hist.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        missingRate_hist = project + 'postcalling_qc/callRate_byGroup.jpeg' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
+        missingRate_hist = project + '/postcalling_qc/callRate_byGroup.jpeg' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
         basechangeTxt = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/basechange_all.txt',
-        basechange = postcalling_qc_dir + '/basechange_3d.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else 'postcalling_qc/basechange_all.png',
+        basechange = postcalling_qc_dir + '/basechange_3d.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/basechange_all.png',
         basechange_distribution = postcalling_qc_dir + '/basechange_distribution.png'  if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],
         basechange_bar = postcalling_qc_dir + '/basechange_bar.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],  
         bam_matcher_plot = bamMatcher_dir + '/bam_matcher_check.png' if config['MODE'] == 'somatic' else []
     output:
-        doc = 'word_doc/' + outName + '_QC_Report.docx', 
-        R = 'word_doc/doc.R',
-        Rout = 'word_doc/doc.R.out'
+        doc = project + '/word_doc/' + outName + '_QC_Report.docx', 
+        R = project + '/word_doc/doc.R',
+        Rout = project + '/word_doc/doc.R.out'
     run:
         totSubs = len(SAMPLES)
         buildName = outName.replace("build_", "")
