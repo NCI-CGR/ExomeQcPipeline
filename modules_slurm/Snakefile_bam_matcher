@@ -7,6 +7,7 @@ from glob import iglob
 pair_manifest = config['pairs']
 bamMatcher_dir = 'bamMatcher'
 bamMatcherExe = config['BamMatcher']
+bamMatcherVCF = config['bamMatcherVcf']
 
 PAIRS = []
 tumorDict = {}
@@ -43,10 +44,11 @@ rule run_bam_matcher:
     params:
         exe = bamMatcherExe,
         ref = refFile,
+        vcf = bamMatcherVCF,
         cache = bamMatcher_dir + '/{sample}/'
     shell:
         #'. /etc/profile.d/modules.sh; module load python;'
-        'python {params.exe} --bam1 {input.tumorBam} --bam2 {input.normalBam} --output {output} --reference {params.ref} --cache-dir {params.cache}'        
+        'python {params.exe} --bam1 {input.tumorBam} --bam2 {input.normalBam} --output {output} --reference {params.ref} --vcf {params.vcf} --cache-dir {params.cache}'        
     
 rule summary_bam_matcher:
     input: 

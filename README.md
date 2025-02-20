@@ -10,6 +10,28 @@ Also the pipeline has two branches: report generation branch and non report gene
 1. report generation branch: will automaticlly generate all modules according to somatic/germline setting in the config.yaml file. Output report will be in word_doc folder.
 2. non report generation branch: will run any module set as TRUE in config_no_report.yaml file. Output table and figure will be in the subfolder of the particular module.
 
+## Software Requirement:
+
+CCAD installed modules
+- python3/3.10.2 
+- singularity/3.9.5
+- R/4.4.1
+- samtools/1.15.1
+- bcftools/1.20 
+- tabix/1.15
+- fastqc/0.11.9
+
+R packages to install
+- ggplot2
+- plyr
+- dplyr
+- reshape2
+- viridisLite
+- viridis
+- officer
+- magrittr
+- flextable
+
 ## Input Requirement:
 
 __BAM level QC branch:__

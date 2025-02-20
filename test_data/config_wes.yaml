@@ -37,6 +37,7 @@ fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000g
 refPlink: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
 refPlinkFam: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
 omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.exome.vcf.gz
+bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/1kg.exome.highAF.7550.vcf
 
 #fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
 #fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
