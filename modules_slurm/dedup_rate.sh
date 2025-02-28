@@ -6,7 +6,7 @@ MANIFEST=$1
 OUTDIR=$2
 
 NF=$(awk -F"," '{print NF}' $MANIFEST)
-# rm ${OUTDIR}/lane_dup_rate_tmp.txt 2>/dev/null
+rm ${OUTDIR}/lane_dup_rate_tmp.txt 2>/dev/null
 
 for i in $(awk -F"," '{if(NR>1){print $3"="$6"="$4"="$5"="$13}}' $MANIFEST); do 
 	FLOWCELL=$(echo $i | cut -d= -f1);CGFID=$(echo $i | cut -d= -f2); 
