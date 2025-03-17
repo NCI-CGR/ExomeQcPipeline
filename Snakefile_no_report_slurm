@@ -36,7 +36,7 @@ GROUPS=[]
 SAMPLES = []
 sampleGroupDict = {}
 CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
-
+sampleCount=len(SAMPLES)
 
 ########################
 #Germline call
@@ -45,7 +45,8 @@ with open(manifest) as f:
     next(f)
     for line in f:
         (group, analysisid) = [line.split(',')[i] for i in [6,12]] #with list index [6,11,12], it will throw error "list indices must be integers or slices, not tuple". Need to explicitly specify by the loop, because you cannot index list
-        sample = group + "_" + analysisid
+        #sample = group + "_" + analysisid
+        sample = analysisid
         if (sample not in SAMPLES):
             SAMPLES.append(sample)
             sampleGroupDict[sample] = group        
@@ -191,8 +192,8 @@ rule all:
         postcalling_qc_dir + '/variant_count_perKB.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
         postcalling_qc_dir + '/variant_count.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
         postcalling_qc_dir + '/titv_ratio.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/PC1-PC2.pdf' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/PercentHist.pdf' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/PC1-PC2.pdf' if ( config['post_calling_check'] and config['MODE'] == 'wgs' and sampleCount >50 ) or ( config['post_calling_check'] and config['MODE'] == 'wes'  and sampleCount >50 ) else [],
+        postcalling_qc_dir + '/PercentHist.pdf' if ( config['post_calling_check'] and config['MODE'] == 'wgs' and sampleCount >50 ) or ( config['post_calling_check'] and config['MODE'] == 'wes' and sampleCount >50 ) else [],
         postcalling_qc_dir + '/callers_venn.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
         postcalling_qc_dir + '/callRate_bychr.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
         postcalling_qc_dir + '/callRate_bychr.quantile.txt' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],

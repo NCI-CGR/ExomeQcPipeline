@@ -10,7 +10,7 @@ rule myfastqc:
     output:
         project + '/fastqc/{sample}_fastqc.html'
     params:
-        outdir = 'fastqc',
+        outdir = project + '/fastqc',
         tmpdir = config['tmpDir']
     shell:
         '. /etc/profile.d/modules.sh; module load fastqc;'
@@ -22,7 +22,7 @@ rule multiqc:
     output:
         project + '/fastqc/multiqc_report.html'
     params:
-        outdir = 'fastqc'    
+        outdir = project + '/fastqc'    
     singularity: "docker://ewels/multiqc:latest"
     shell:
         #'. /etc/profile.d/modules.sh; module load python/2.7.8;'
