@@ -72,22 +72,23 @@ rule caller_venn_diagram:
         plt.title("Venn Diagram")
         plt.savefig(output[0])
         
-rule pca:
-    input:
-        vcf = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz',
-        pca = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.txt'
-    output:
-        eigenVal = postcalling_qc_dir + '/variants_annotated_majority_intersect.common.eur.eigenval',
-        plotPC = postcalling_qc_dir + '/PC1-PC2.pdf',
-        plotHist = postcalling_qc_dir + '/PercentHist.pdf'
-    params:
-        postcalling_qc_dir + '/variants_annotated_sample_eur.lst'
-    shell:
-        '''
-        module load bcftools R;
-        awk '{{if($3<0.05 && $4<-0.1 && $1=="Samples"){{print $2}}}}' {input.pca} > {params}; 
-        sh modules_slurm/PCA.sh {input.vcf} {params}; 
-        '''
+if sampleCount > 50:        
+    rule pca:
+        input:
+            vcf = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz',
+            pca = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.txt'
+        output:
+            eigenVal = postcalling_qc_dir + '/variants_annotated_majority_intersect.common.eur.eigenval',
+            plotPC = postcalling_qc_dir + '/PC1-PC2.pdf',
+            plotHist = postcalling_qc_dir + '/PercentHist.pdf'
+        params:
+            postcalling_qc_dir + '/variants_annotated_sample_eur.lst'
+        shell:
+            '''
+            module load bcftools R;
+            awk '{{if($3<0.05 && $4<-0.1 && $1=="Samples"){{print $2}}}}' {input.pca} > {params}; 
+            sh modules_slurm/PCA.sh {input.vcf} {params}; 
+            '''
 
 #switch from glu util.table to P dplyr
 rule postcalling_qc_table:
@@ -191,7 +192,7 @@ rule basechange_group_plot:
     input:
         postcalling_qc_dir + '/basechange_all.txt'
     output:
-        basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS),
+        #basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS),
         basechange_all = postcalling_qc_dir + '/basechange_all.png',        
         R = postcalling_qc_dir + '/basechange.R',
         Rout = postcalling_qc_dir + '/basechange.R.out'
@@ -254,9 +255,10 @@ rule call_rate_plot:
         table = postcalling_qc_dir + '/callRate_bychr.quantile.txt',
         plotByGroup = postcalling_qc_dir + '/callRate_byGroup.jpeg'       
     params:
-        script = 'modules_slurm/callRate.R'    
+        script = 'modules_slurm/callRate.R',
+        dir = postcalling_qc_dir
     shell:   
         '''
         . /etc/profile.d/modules.sh; module load R;
-        Rscript {params.script}
+        Rscript {params.script} {params.dir}
         '''        

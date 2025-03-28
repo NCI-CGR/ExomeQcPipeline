@@ -130,7 +130,7 @@ include: 'modules_slurm/Snakefile_doc'
 rule all:
     input:
         bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
-        #basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [], 
+        basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'germline' else [], 
         PCA = postcalling_qc_dir + '/PC1-PC2.pdf' if (config['MODE'] == 'germline' and sampleCount > 50) else [],
         QCreport = project + '/word_doc/filtered_sample.txt',
         word_report = project + '/word_doc/' + outName + '_QC_Report.docx'
