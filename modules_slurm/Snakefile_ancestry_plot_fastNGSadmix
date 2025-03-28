@@ -14,7 +14,7 @@ rule angsd:
         beagle = ancestry_check_dir + '/{sample}.beagle.gz'
         #txt = outDir + 'fastNGSadmix/{sample}.qopt'
     params:
-        refSite = config['fastNGSsite'],
+        refSite = config[version]['fastNGSsite'],
         temp = temp(ancestry_check_dir + '/{sample}_temp.beagle.gz'),
         temp2 = temp(ancestry_check_dir + '/{sample}.beagle'),
         prefix = ancestry_check_dir + '/{sample}_temp',
@@ -31,8 +31,8 @@ rule fastNGSadmix:
     output:
         ancestry_check_dir + '/{sample}.qopt'
     params:
-        refPanel = config['fastNGSpanel'],
-        refInd = config['fastNGSiInd'],
+        refPanel = config[version]['fastNGSpanel'],
+        refInd = config[version]['fastNGSiInd'],
         prefix = ancestry_check_dir + '/{sample}'
     benchmark:
         ancestry_check_dir + '/benchmark/fastNGSadmix_{sample}.txt'
@@ -52,7 +52,7 @@ rule fastNGSadmixPCA:
         pcaPlot = ancestry_check_dir + '/{sample}_PCAplot.pdf'
         
     params:
-        ref = config['refPlink'],
+        ref = config[version]['refPlink'],
         prefix = ancestry_check_dir + '/{sample}'
     shell:
         'module load R;'    
@@ -79,7 +79,7 @@ rule doProcastesPCA:
         png2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.png',
         txt2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.txt'
     params:
-        ref = config['refPlinkFam'],
+        ref = config[version]['refPlinkFam'],
         dir = ancestry_check_dir
     shell:
         'module load R;'    

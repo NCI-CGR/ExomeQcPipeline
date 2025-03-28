@@ -1,10 +1,12 @@
 ## Introduction of ExomeQcPipeline
 
-ExomeQcPipeline can be excuted in four modes: germline wes mode,germline wgs mode and somatic pair mode and tumor only mode. Difference between the four modes are 
+ExomeQcPipeline can be excuted in three modes: germline mode,somatic pair mode and tumor only mode, based on analysis request. Difference between the modes are 
 1. somatic pair mode contains exclusive modules of bam-matcher to check tumor normal pairs and no sample relateness check.
 2. tumor only mode is mostly same as somatic pair mode except nor bam-matcher test. 
-3  germline wes/target mode contains sample relateness check and post calling qc contains total filtered variant count, ti/tv ratio and base change check, call rate check and sample PCA. 
-4. wgs mode is mostly same as wes/target mode except no capturekit related qc stats.
+3  germline mode contains sample relateness check and post calling qc contains total filtered variant count, ti/tv ratio and base change check, call rate check and sample PCA. 
+
+Two data types are accepted in the pipeline, which are wgs and wes(targetseq). Metrics difference between the two data types are:
+1, wgs mode is mostly same as wes/target mode except no capturekit related qc stats.
 
 Also the pipeline has two branches: report generation branch and non report generation branch(bam level):
 1. report generation branch: will automaticlly generate all modules according to somatic/germline setting in the config.yaml file. Output report will be in word_doc folder.
@@ -36,8 +38,15 @@ R packages to install
 
 __BAM level QC branch:__
 - Fill the config file modules_slurm/config.yaml
-  - Build manifest file
-  - Bam-matcher_check: fill pair.txt if for somatic pair mode
+  - Build manifest file(with 13 standard columns separated by comma generated from LIMS)
+```
+INSTRUMENT,SEQDATE,FLOWCELL,LANE,INDEX,CGF ID,GROUP,LIMS INDVIDUALID,EXPECTED GENDER,IDENTIFILER GENDER,CAPKITAVGCOV,ASSAYID,ANALYSIS ID,SR SUBJECT ID
+E0411-01,2/7/2020,AHFLFFDRXX,2,GTCGAAGA-CAATGTGG,SC091782,Breast,I-0000949758,F,F,833.9,EZ_Choice_Kid-Lung-Extra,Breast_1078_DistantNormal,SI00425629
+```
+  - Bam-matcher_check: fill pair.txt if for somatic pair mode(with 3 columns of tumor bam path, normal bam path,pair call vcf name separated by tab, no header required)
+```
+/DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/bam_location/Breast_Breast_1004_DistantNormal.bam        /DCEG/Projects/Exome/builds/build_SR0443-004_somatic_UMI_25938/bam_location/Breast_Breast_1004_Normal.bam    Breast_1004_DistantNormal_paircall.vcf
+```
   - pre_calling_check: fill pre-calling qc 
   - postcalling_check: fill ensemble_dir TRUE
 

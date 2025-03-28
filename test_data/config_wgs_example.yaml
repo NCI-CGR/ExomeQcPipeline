@@ -3,38 +3,49 @@ project: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/QC
 manifest: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Manifest/SR0551-005-ANALYSIS-MANIFEST-5toUSU.csv
 bam_location: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/bam_location
 precalling_report: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/QC/pre_calling_qc_report_09092021_wgs.txt
+
 ref: /DCEG/CGF/Bioinformatics/Production/data/hg38/Homo_sapiens_assembly38.fasta
+version: hg38 #hg19
 capturekit: /DCEG/CGF/Bioinformatics/Production/data/hg38/wgs_calling_regions.hg38.bed
 
-MODE: wgs # wgs, somatic
+dataType: wgs #wes
+MODE: germline # , somatic, tumor_only
 tmpDir: /scratch/luow2/fastqc
-
-##germline required files
-ensemble_vcf: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/QC/ExomeQcPipeline/postcalling_qc_96lowinput/variants_annotated_majority_intersect_nonsyn.vcf
-#/DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/ensemble/all_callers_merged_genotypes.vcf.gz
-doc_template_germline: ExomeQcPipeline_Template_interim.docx
-
-##somatic required files
-BamMatcher: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/bam-matcher3.py
-pairs: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Manifest/pairs.txt
-doc_template_somatic: ExomeQcPipeline_Somatic_Template_interim.docx
-ensemble_dir: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Results/Ensemble
 
 ##flags
 post_calling_check: TRUE
 relatedness_check: FALSE
 
+##germline required files
+ensemble_vcf: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/QC/ExomeQcPipeline/postcalling_qc_96lowinput/variants_annotated_majority_intersect_nonsyn.vcf
+#/DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/ensemble/all_callers_merged_genotypes.vcf.gz
+
+##somatic required files
+BamMatcher: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/bam-matcher3.py
+pairs: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Manifest/pairs.txt
+ensemble_dir: /DCEG/Projects/Exome/builds/build_benchmark_COVID19_pilot_28076/Results/Ensemble
+
+wes:
+  doc_template_germline: ExomeQcPipeline_Template_interim.docx
+  doc_template_somatic: ExomeQcPipeline_Somatic_Template_interim.docx
+wgs:
+  doc_template_somatic: ExomeQcPipeline_Somatic_Template_WGS_interim.docx
+  doc_template_germline: ExomeQcPipeline_Template_WGS_interim.docx
+  
 ##parameter files
-fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
-fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-refPlink: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
-refPlinkFam: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
-# fastNGSsite: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel_chr.sites
-# fastNGSpanel: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/refPanel_1000genomesRefPanel.txt
-# fastNGSiInd: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
-# refPlink: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
-# refPlinkFam: /CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
-omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b38.exome.vcf.gz
-
-
+hg19:
+  fastNGSsite: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel_chr.sites
+  fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/refPanel_1000genomesRefPanel.txt
+  fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
+  refPlink: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
+  refPlinkFam: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
+  omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.exome.vcf.gz
+  bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/1kg.exome.highAF.7550.vcf
+hg38:
+  fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
+  fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
+  fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
+  refPlink: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
+  refPlinkFam: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
+  omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b38.exome.vcf.gz
+  bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/Dongjing/bam-matcher/download_1kg.exome.highAF.7550.hg38.chr.vcf

@@ -14,7 +14,7 @@ rule run_verifyBamID:
         outDir = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}',
         ref = refFile,
         depth = coverage_dir + '/Final_merged_coverage.txt',
-        omnivcf = config['omniVcf']
+        omnivcf = config[version]['omniVcf']
     singularity: "docker://griffan/verifybamid2"
     shell:
         #'/DCEG/CGF/Bioinformatics/Production/BZhu/bin/verifyBamID_1.1.0/verifyBamID/bin/verifyBamID --ignoreRG --chip-none --precise --best --vcf {params.omnivcf} --bam {input} --out {params.outDir}'     

@@ -143,11 +143,11 @@ rule qc_sample_summary:
                 for fname in input.single:                                  
                     analysisID = os.path.basename(fname)[:-4]
                     possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
-                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
+                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
                     existing_columns = [col for col in possible_columns if col in filtered_df.columns]
                     aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
-                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
-                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
                     contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
                     if not a_file.isin([analysisID]).any().any():
                         outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\tY\n' )
@@ -156,7 +156,7 @@ rule qc_sample_summary:
       
 rule word_doc:
     input:
-        template = config['doc_template_somatic'] if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else config['doc_template_germline'],
+        template = config[data]['doc_template_somatic'] if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else config[data]['doc_template_germline'],
         sample_summary = project + '/word_doc/sample_summary.txt',
         fastqc = project + '/fastqc/multiqc_report.html', 
         contamination_plot = project + '/bamContamination/bam_contamination_rate.png',
@@ -168,7 +168,7 @@ rule word_doc:
         subject_dup_plot = project + '/deduplication/subject_dup_rate.png',
         top10_dup = project + '/deduplication/top10_dup_rate.txt',
         insertSize_plot = project + '/precalling_qc/insertSize.png',
-        fold80_plot = project + '/precalling_qc/fold80.png' if not config['MODE'] == 'wgs' else [],
+        fold80_plot = project + '/precalling_qc/fold80.png' if not config['dataType'] == 'wgs' else [],
         seqArtifact_plot = project + '/precalling_qc/seq_artifact.png',
         oxidation_plot = project + '/precalling_qc/oxidation.png',
         # summary_ue = 'exomeCQA/summary_ue.txt' if not config['MODE'] == 'wgs' else [],		
@@ -176,13 +176,13 @@ rule word_doc:
         # ccs_plot = 'exomeCQA/cohort_coverage_sparseness.png' if not config['MODE'] == 'wgs' else [],
         # ue_plot = 'exomeCQA/unevenness.png' if not config['MODE'] == 'wgs' else [],
         # top10_ue = 'exomeCQA/top10_ue.txt' if not config['MODE'] == 'wgs' else [],
-        total_count = project + '/postcalling_qc/variant_count.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        botton10_count = project + '/postcalling_qc/variant_outlier10.txt' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        titv_ratio = project + '/postcalling_qc/titv_ratio.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        botton10_titv = project + '/postcalling_qc/titv_outlier10.txt' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        relatedness = relatedness_dir + '/out.relatedness2' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        relatedness_hist = relatedness_dir + '/relatedness_hist.png' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
-        missingRate_hist = project + '/postcalling_qc/callRate_byGroup.jpeg' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
+        total_count = project + '/postcalling_qc/variant_count.png' if config['MODE'] == 'germline' else [],
+        botton10_count = project + '/postcalling_qc/variant_outlier10.txt' if config['MODE'] == 'germline' else [],
+        titv_ratio = project + '/postcalling_qc/titv_ratio.png' if config['MODE'] == 'germline' else [],
+        botton10_titv = project + '/postcalling_qc/titv_outlier10.txt' if config['MODE'] == 'germline' else [],
+        relatedness = relatedness_dir + '/out.relatedness2' if config['MODE'] == 'germline' else [],
+        relatedness_hist = relatedness_dir + '/relatedness_hist.png' if config['MODE'] == 'germline' else [],
+        missingRate_hist = project + '/postcalling_qc/callRate_byGroup.jpeg' if config['MODE'] == 'germline' else [],
         basechangeTxt = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/basechange_all.txt',
         basechange = postcalling_qc_dir + '/basechange_3d.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/basechange_all.png',
         basechange_distribution = postcalling_qc_dir + '/basechange_distribution.png'  if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],
@@ -195,9 +195,9 @@ rule word_doc:
     run:
         totSubs = len(SAMPLES)
         buildName = outName.replace("build_", "")
-        bed = bedFile if not config['MODE'] == 'wgs' else []
-        exomeCQAgeneReport = exomeCQA_dir + '/exomeCQA_gene.chrALL' if not config['MODE'] == 'wgs' else []
-        exomeCQAexonReport = exomeCQA_dir + '/exomeCQA_exon.chrALL' if not config['MODE'] == 'wgs' else []
+        bed = bedFile if not config['dataType'] == 'wgs' else []
+        exomeCQAgeneReport = exomeCQA_dir + '/exomeCQA_gene.chrALL' if not config['dataType'] == 'wgs' else []
+        exomeCQAexonReport = exomeCQA_dir + '/exomeCQA_exon.chrALL' if not config['dataType'] == 'wgs' else []
         # geneNum = len(open(exomeCQAgeneReport).readlines(  )) if not config['MODE'] == 'wgs' else []
         # exonNum = len(open(exomeCQAexonReport).readlines(  )) if not config['MODE'] == 'wgs' else []
         precallingQCReport = precallingReport
@@ -242,7 +242,7 @@ ft_3 <- align(ft_3, align = "center")
 
 '''
 
-        if config['MODE'] == 'wgs' or config['MODE'] == 'wes':
+        if config['dataType'] == 'germline':
             rTxt += '''
 table_6a <- read.table("''' + input.botton10_count + '''", header = TRUE)
 
@@ -343,7 +343,7 @@ my_doc <- read_docx(path = "''' + input.template + '''") %>%
     cursor_reach(keyword = "Figure 3. coverage scatter plot for all exome samples, with cases and controls separated") %>%
     body_add_img(src = "''' + input.aveCov_plot + '''", width = 5, height = 5, pos = "before") %>%
     '''
-        if not config['MODE'] == 'wgs':           
+        if not config['dataType'] == 'wgs':           
             rTxt += '''              
     cursor_reach(keyword = "Figure 5a. histogram for all Fold 80 base penalty for samples") %>%
     body_add_img(src = "''' + input.fold80_plot + '''", width = 5, height = 5, pos = "before") %>%   

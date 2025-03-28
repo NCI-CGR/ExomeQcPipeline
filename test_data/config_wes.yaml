@@ -4,44 +4,49 @@ manifest: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/Manifes
 bam_location: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/bam_location
 precalling_report: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/QC/pre_calling_qc_report.txt
 
-ref: /DCEG/CGF/Resources/Data/genome/hg19_canonical_correct_chr_order.fa
+ref: /DCEG/CGF/Resources/Data/genome/hg19_canonical_correct_chr_order.fa  ##/DCEG/CGF/Bioinformatics/Production/data/hg38/Homo_sapiens_assembly38.fasta
+version: "hg19" #hg38
+
 #capturekit: /DCEG/CGF/Bioinformatics/Production/data/hg38/BedFiles/Homo_sapiens_assembly38.bed
 capturekit: /DCEG/Projects/Exome/SequencingData/BED_FILES/seqcap_EZ_Exome_v3_v3utr_intersect_correct.bed
 
-MODE: wes # wgs,wes, somatic, tumor_only
+dataType: wes #wgs
+MODE: germline #germline, somatic, tumor_only
 tmpDir: /scratch/fz32402_qc
-
-##germline required files
-ensemble_vcf: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/Ensemble_New_Annotation/variants/variants_annotated.vcf.gz
-doc_template_germline: ExomeQcPipeline_Template_interim.docx
-
-##somatic required files
-BamMatcher: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/bam-matcher3.py
-pairs: /DCEG/CGF/Bioinformatics/Production/Wen/git/CGR_vcfComparison_pipeline/manifest_33381.txt
-doc_template_somatic: ExomeQcPipeline_Somatic_Template_interim.docx
-ensemble_dir: /DCEG/Projects/Exome/builds/build_SR0586-001_WTC_Chernobyl_Thyroid_33381/Results/Mutect2_somaticseq_gatk4
 
 ##flags
 post_calling_check: FALSE
-relatedness_check: TRUE
+relatedness_check: FALSE
 
-##parameter files
-#fastNGSsite: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
-#fastNGSpanel: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-#fastNGSiInd: /CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-#refPlink: /CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
-#refPlinkFam: /CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
-fastNGSsite: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel_chr.sites
-fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/refPanel_1000genomesRefPanel.txt
-fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
-refPlink: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
-refPlinkFam: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
-omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.exome.vcf.gz
-bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/1kg.exome.highAF.7550.vcf
+##germline required files
+ensemble_vcf: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/Ensemble_New_Annotation/variants/variants_annotated.vcf.gz
+ 
+##somatic required files
+BamMatcher: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/bam-matcher3.py
+pairs: /DCEG/CGF/Bioinformatics/Production/Wen/git/CGR_vcfComparison_pipeline/manifest_33381.txt
+ensemble_dir: /DCEG/Projects/Exome/builds/build_SR0586-001_WTC_Chernobyl_Thyroid_33381/Results/Mutect2_somaticseq_gatk4
 
-#fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
-#fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-#fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
-#refPlink: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
-#refPlinkFam: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
-#omniVcf: /DCEG/CGF/Bioinformatics/Production/BZhu/verifyBamID/Omni25_genotypes_1525_samples_v2.b38.PASS.ALL.sites_with_chr.vcf
+wes:
+  doc_template_germline: ExomeQcPipeline_Template_interim.docx
+  doc_template_somatic: ExomeQcPipeline_Somatic_Template_interim.docx
+wgs:
+  doc_template_somatic: ExomeQcPipeline_Somatic_Template_WGS_interim.docx
+  doc_template_germline: ExomeQcPipeline_Template_WGS_interim.docx
+   
+##database parameter files
+hg19:
+  fastNGSsite: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel_chr.sites
+  fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/refPanel_1000genomesRefPanel.txt
+  fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
+  refPlink: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
+  refPlinkFam: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
+  omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.exome.vcf.gz
+  bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/1kg.exome.highAF.7550.vcf
+hg38:
+  fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites
+  fastNGSpanel: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/refPanel_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
+  fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/nInd_shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.txt
+  refPlink: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink
+  refPlinkFam: /DCEG/CGF/Bioinformatics/Production/Wen/data1000genomes/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink.fam
+  omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b38.exome.vcf.gz
+  bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/Dongjing/bam-matcher/download_1kg.exome.highAF.7550.hg38.chr.vcf

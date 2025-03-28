@@ -14,7 +14,8 @@ bam_location = config['bam_location']
 project = config['project'].rstrip("/")
 manifest = config['manifest']
 refFile = config['ref']
-#populationFile = config['population_file']
+version = config['version']
+data = config['dataType']
 bedFile = config['capturekit']
 precallingReport = config['precalling_report']
 #exomeCQAgeneReport = config['exomCQA_gene']
@@ -35,6 +36,7 @@ GROUPS=[]
 SAMPLES = []
 sampleGroupDict = {}
 CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
+sampleCount=len(SAMPLES)
 
 ########################
 #Germline call
@@ -44,6 +46,7 @@ with open(manifest) as f:
     for line in f:
         (group, analysisid) = [line.split(',')[i] for i in [6,12]] #with list index [6,11,12], it will throw error "list indices must be integers or slices, not tuple". Need to explicitly specify by the loop, because you cannot index list
         sample = group + "_" + analysisid
+
         if (sample not in SAMPLES):
             SAMPLES.append(sample)
             sampleGroupDict[sample] = group        
@@ -95,44 +98,39 @@ if config['MODE'] == 'somatic':
         return file     
 
     include: 'modules_slurm/Snakefile_bam_matcher'
-
-#launch all rules    
-include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
-#include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
-include: 'modules_slurm/Snakefile_contamination_plot'
-include: 'modules_slurm/Snakefile_coverage_plot'
-include: 'modules_slurm/Snakefile_duplication_plot'
-include: 'modules_slurm/Snakefile_fastqc'   
-
-# if not config['MODE'] == 'wgs':
-    # include: 'modules_slurm/Snakefile_exomeCQA_plot'
-    # #include: 'modules_slurm/Snakefile_ancestry_plot_laser'
-# else:
-    # include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
-    
-include: 'modules_slurm/Snakefile_sex_plot'
-include: 'modules_slurm/Snakefile_pre_calling_plot'
+    include: 'modules_slurm/Snakefile_coverage_plot'
 
 if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only':
     print(config['MODE'])
     
     ensemble_dir = config['ensemble_dir']
     include: "modules_slurm/Snakemake_utils"
+    include: 'modules_slurm/Snakefile_coverage_plot'
     include: 'modules_slurm/Snakefile_postcalling_plot_somatic'
 else:
     ensemble_vcf = config['ensemble_vcf']
     
     include: "modules_slurm/Snakemake_utils"
     #include: 'modules_slurm/Snakefile_relatedness'
+    include: 'modules_slurm/Snakefile_coverage_plot'
     include: 'modules_slurm/Snakefile_postcalling_plot'
     include: 'modules_slurm/Snakefile_relatedness'
 
+#launch all rules    
+include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
+#include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
+include: 'modules_slurm/Snakefile_contamination_plot'
+include: 'modules_slurm/Snakefile_duplication_plot'
+include: 'modules_slurm/Snakefile_fastqc'   
+    
+include: 'modules_slurm/Snakefile_sex_plot'
+include: 'modules_slurm/Snakefile_pre_calling_plot'
 include: 'modules_slurm/Snakefile_doc'
     
 rule all:
     input:
         bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
-        basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [], 
-        PCA = postcalling_qc_dir + '/PC1-PC2.pdf' if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [],
+        #basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [], 
+        PCA = postcalling_qc_dir + '/PC1-PC2.pdf' if (config['MODE'] == 'germline' and sampleCount > 50) else [],
         QCreport = project + '/word_doc/filtered_sample.txt',
         word_report = project + '/word_doc/' + outName + '_QC_Report.docx'

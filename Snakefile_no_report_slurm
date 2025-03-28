@@ -15,6 +15,7 @@ bam_location = config['bam_location']
 project = config['project'].rstrip("/")
 manifest = config['manifest']
 refFile = config['ref']
+version = config['version']
 #populationFile = config['population_file']
 bedFile = config['capturekit']
 precallingReport = config['precalling_report']
@@ -36,7 +37,7 @@ GROUPS=[]
 SAMPLES = []
 sampleGroupDict = {}
 CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
-
+sampleCount=len(SAMPLES)
 
 ########################
 #Germline call
@@ -64,6 +65,13 @@ def getReport(wildcards):
 	
 #for bam_subdir in glob(bam_location + '/*/'):
 #    GROUPS.append(os.path.basename(bam_subdir.strip('/')))
+
+include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix' 
+include: 'modules_slurm/Snakefile_contamination_plot'
+include: 'modules_slurm/Snakefile_duplication_plot'
+include: 'modules_slurm/Snakefile_fastqc'  
+include: 'modules_slurm/Snakefile_sex_plot'
+include: 'modules_slurm/Snakefile_pre_calling_plot'  
 
 ########################
 #Somatic pair call
@@ -94,65 +102,24 @@ if config['MODE'] == 'somatic':
     def get_normal(wildcards):
         (file) = normalDict[wildcards.sample]
         return file     
-
-    include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
-
-    include: 'modules_slurm/Snakefile_bam_matcher'
-     
-    include: 'modules_slurm/Snakefile_coverage_plot'
-
-    include: 'modules_slurm/Snakefile_contamination_plot'
         
-    include: 'modules_slurm/Snakefile_duplication_plot'
+    include: 'modules_slurm/Snakefile_bam_matcher'
+    include: 'modules_slurm/Snakefile_coverage_plot'
     
-    #include: 'modules_slurm/Snakefile_exomeCQA_plot'
-  
-    include: 'modules_slurm/Snakefile_fastqc'        
-     
-    include: 'modules_slurm/Snakefile_sex_plot'
-  
-    include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']: 
         ensemble_dir = config['ensemble_dir']   
         include: "modules_slurm/Snakemake_utils"
         include: 'modules_slurm/Snakefile_postcalling_plot_somatic'
+        
 elif config['MODE'] == 'tumor_only':
     
-    include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
-    
     include: 'modules_slurm/Snakefile_coverage_plot'
-
-    include: 'modules_slurm/Snakefile_contamination_plot'
-         
-    include: 'modules_slurm/Snakefile_duplication_plot'
-      
-    include: 'modules_slurm/Snakefile_fastqc'        
-
-    include: 'modules_slurm/Snakefile_sex_plot'
-       
-    include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']:  
         ensemble_dir = config['ensemble_dir']
         include: "modules_slurm/Snakemake_utils"
         include: 'modules_slurm/Snakefile_postcalling_plot_somatic'
 else:
-    
-#    if (config['MODE'] == 'wes'):   
-#        include: 'modules_slurm/Snakefile_ancestry_plot_laser'
-#    if (config['MODE'] == 'wgs'):           
-    include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix' 
-    
     include: 'modules_slurm/Snakefile_coverage_plot'
-
-    include: 'modules_slurm/Snakefile_contamination_plot'       
-            
-    include: 'modules_slurm/Snakefile_duplication_plot'
-  
-    include: 'modules_slurm/Snakefile_fastqc'           
-      
-    include: 'modules_slurm/Snakefile_sex_plot'
-    
-    include: 'modules_slurm/Snakefile_pre_calling_plot'
     if config['post_calling_check']:   
         ensemble_vcf = config['ensemble_vcf']
         include: "modules_slurm/Snakemake_utils"
@@ -163,16 +130,9 @@ else:
         include: 'modules_slurm/Snakefile_postcalling_plot'
         include: 'modules_slurm/Snakefile_relatedness'
         
-# include: 'modules_slurm/Snakefile_ancestry_plot'
-# #include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
-# include: 'modules_slurm/Snakefile_contamination_plot'
-# include: 'modules_slurm/Snakefile_coverage_plot'
-# include: 'modules_slurm/Snakefile_duplication_plot'
-# include: 'modules_slurm/Snakefile_exomeCQA_plot'
-# include: 'modules_slurm/Snakefile_sex_plot'
-# include: 'modules_slurm/Snakefile_pre_calling_plot'  
+
 include: 'modules_slurm/Snakefile_doc'
-        
+    
 rule all:
     input:
         ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.png',
@@ -183,23 +143,23 @@ rule all:
         coverage_dir + '/Average_Coverage_caco.png',
         deduplication_dir + '/subject_dup_rate.png',
         sex_check_dir + '/sex_check.png',
-        precalling_dir + '/fold80.png' if (not config['MODE'] == 'wgs') else [],
+        precalling_dir + '/fold80.png' if (not config['dataType'] == 'wgs') else [],
         precalling_dir + '/insertSize.png',        
         precalling_dir + '/seq_artifact.png',
         precalling_dir + '/oxidation.png',
-        postcalling_qc_dir + '/basechange_all.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/variant_count_perKB.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/variant_count.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/titv_ratio.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/PC1-PC2.pdf' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/PercentHist.pdf' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callers_venn.png' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callRate_bychr.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callRate_bychr.quantile.txt' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
-        postcalling_qc_dir + '/callRate_byGroup.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'wgs' ) or ( config['post_calling_check'] and config['MODE'] == 'wes' ) else [],
+        postcalling_qc_dir + '/basechange_all.png' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/variant_count_perKB.png' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/variant_count.png' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/titv_ratio.png' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/PC1-PC2.pdf' if ( config['post_calling_check'] and config['MODE'] == 'germline' and sampleCount >50 ) else [],
+        postcalling_qc_dir + '/PercentHist.pdf' if ( config['post_calling_check'] and config['MODE'] == 'germline' and sampleCount >50 ) else [],
+        postcalling_qc_dir + '/callers_venn.png' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/callRate_bychr.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/callRate_bychr.quantile.txt' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
+        postcalling_qc_dir + '/callRate_byGroup.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
         postcalling_qc_dir + '/basechange_3d.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],        
         postcalling_qc_dir + '/basechange_distribution.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],
-        project + '/relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'wgs' ) or ( config['relatedness_check'] and config['MODE'] == 'wes' ) else [],
+        project + '/relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'germline' ) else [],
         project + '/fastqc/multiqc_report.html',
         project + '/word_doc/bam_stat.txt'
  

@@ -15,7 +15,7 @@ rule pre_calling_plot:
         config['precalling_report']
     output:
         png_aritifact = precalling_dir + '/seq_artifact.png',
-        png_foldeighty = precalling_dir + '/fold80.png' if not config['MODE'] == 'wgs' else [],
+        png_foldeighty = precalling_dir + '/fold80.png' if not config['dataType'] == 'wgs' else [],
         png_oxidation = precalling_dir + '/oxidation.png',
         png_insertSize = precalling_dir + '/insertSize.png',        
         R = precalling_dir + '/precalling_qc_plot.R',

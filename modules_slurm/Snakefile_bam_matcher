@@ -7,30 +7,31 @@ from glob import iglob
 pair_manifest = config['pairs']
 bamMatcher_dir = 'bamMatcher'
 bamMatcherExe = config['BamMatcher']
-bamMatcherVCF = config['bamMatcherVcf']
+bamMatcherVCF = config[version]['bamMatcherVcf']
 
-PAIRS = []
-tumorDict = {}
-normalDict = {}
+###
+#PAIRS = []
+#tumorDict = {}
+#normalDict = {}
 
-with open(pair_manifest) as f:
-    for line in f:
-        (tumor, normal, vcf) = line.split()
-        sample = os.path.basename(vcf)[:-4]
-        PAIRS.append(os.path.basename(vcf)[:-4])
-        tumorName = os.path.basename(tumor)[:-4]
-        normalName = os.path.basename(normal)[:-4]
-        tumorDict[sample] = (tumor)
-        normalDict[sample] = (normal)
+#with open(pair_manifest) as f:
+#    for line in f:
+#        (tumor, normal, vcf) = line.split()
+#        sample = os.path.basename(vcf)[:-4]
+#        PAIRS.append(os.path.basename(vcf)[:-4])
+#        tumorName = os.path.basename(tumor)[:-4]
+#        normalName = os.path.basename(normal)[:-4]
+#        tumorDict[sample] = (tumor)
+#        normalDict[sample] = (normal)
 
-def get_tumor(wildcards):
-    (file) = tumorDict[wildcards.sample]
-    return file
+#def get_tumor(wildcards):
+#    (file) = tumorDict[wildcards.sample]
+#    return file
 
-def get_normal(wildcards):
-    (file) = normalDict[wildcards.sample]
-    return file 
- 
+#def get_normal(wildcards):
+#    (file) = normalDict[wildcards.sample]
+#    return file 
+#```### 
 # rule all:
     # input:
         # bamMatcher_dir + '/bam_matcher_report_all.txt'
