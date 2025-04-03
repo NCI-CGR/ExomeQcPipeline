@@ -242,7 +242,7 @@ ft_3 <- align(ft_3, align = "center")
 
 '''
 
-        if config['dataType'] == 'germline':
+        if config['MODE'] == 'germline':
             rTxt += '''
 table_6a <- read.table("''' + input.botton10_count + '''", header = TRUE)
 

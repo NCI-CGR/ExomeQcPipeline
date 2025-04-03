@@ -16,6 +16,7 @@ project = config['project'].rstrip("/")
 manifest = config['manifest']
 refFile = config['ref']
 version = config['version']
+data = config['dataType']
 #populationFile = config['population_file']
 bedFile = config['capturekit']
 precallingReport = config['precalling_report']
