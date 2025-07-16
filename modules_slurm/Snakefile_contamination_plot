@@ -3,7 +3,14 @@
 import sys
 import os
 from glob import glob
-      
+from scripts.utils import initializeConfigVariables
+
+manifest, project, version, GROUPS, SAMPLES, sampleGroupDict, refFile, getBam = initializeConfigVariables(config) 
+
+
+coverage_dir = project + '/coverage'
+contamination_dir = project + '/bamContamination'
+     
 rule run_verifyBamID:
     input:
         getBam

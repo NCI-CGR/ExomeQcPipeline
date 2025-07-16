@@ -3,6 +3,10 @@
 import sys
 import os
 from glob import glob
+from scripts.utils import initializeConfigVariables
+
+manifest, project, version, GROUPS, SAMPLES, sampleGroupDict, refFile, getBam = initializeConfigVariables(config) 
+sex_check_dir = project + 'sex_check'
 
 # rule all:
    # input:

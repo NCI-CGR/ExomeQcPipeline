@@ -3,6 +3,11 @@
 import operator
 import itertools
 import shutil 
+from scripts.utils import initializeConfigVariables
+
+manifest, project, version, GROUPS, SAMPLES, sampleGroupDict, refFile, getBam = initializeConfigVariables(config)
+
+ancestry_check_dir = project + '/ancestry'
 
 def sort_table(table, col=0):
     return sorted(table, key=operator.itemgetter(col))
