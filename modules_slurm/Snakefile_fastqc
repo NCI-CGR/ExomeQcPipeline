@@ -3,6 +3,9 @@
 import sys
 import os
 from glob import glob
+from scripts.utils import initializeConfigVariables
+
+manifest, project, version, GROUPS, SAMPLES, sampleGroupDict, refFile, getBam = initializeConfigVariables(config)
 
 rule myfastqc:
     input:
