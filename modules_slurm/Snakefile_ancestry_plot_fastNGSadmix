@@ -28,7 +28,7 @@ rule angsd:
     shell:
         #'. /etc/profile.d/modules.sh; module load angsd/0.935 tabix ;'
         'angsd -i {input} -GL 2 -sites {params.refSite} -doGlf 2 -doMajorMinor 3 -minMapQ 30 -minQ 20 -doDepth 1 -doCounts 1 -out {params.prefix};'
-        '''zcat {params.temp}| sed 's/^chr//g' > {params.temp2} && bgzip {params.temp2} ;'''
+        '''zcat {output.temp}| sed 's/^chr//g' > {output.temp2} && bgzip {output.temp2} ;'''
 
 rule fastNGSadmix:
     input:
