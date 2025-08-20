@@ -16,12 +16,12 @@ rule angsd:
     input:
         bam = getBam,
     output:
-        beagle = ancestry_check_dir + '/{sample}.beagle.gz'
+        beagle = ancestry_check_dir + '/{sample}.beagle.gz',
+        temp = temp(ancestry_check_dir + '/{sample}_temp.beagle.gz'),
+        temp2 = temp(ancestry_check_dir + '/{sample}.beagle')
         #txt = outDir + 'fastNGSadmix/{sample}.qopt'
     params:
         refSite = config[version]['fastNGSsite'],
-        temp = temp(ancestry_check_dir + '/{sample}_temp.beagle.gz'),
-        temp2 = temp(ancestry_check_dir + '/{sample}.beagle'),
         prefix = ancestry_check_dir + '/{sample}_temp',
         prefix2 = ancestry_check_dir + '/{sample}'
     singularity: "docker://ohdzagenetics/angsd:latest"
