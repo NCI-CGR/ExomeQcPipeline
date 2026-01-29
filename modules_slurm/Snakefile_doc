@@ -80,11 +80,11 @@ rule qc_sample_summary1:
                 for fname in input.single:
                     analysisID = os.path.basename(fname)[:-4]
                     possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
-                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
                     existing_columns = [col for col in possible_columns if col in filtered_df.columns]
                     aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
-                    preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
-                    baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
                     contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
                     bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contains(analysisID)]['RATE']).split()[1]                    
                     outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t' + bammatcherRate + '\t\n' )                     
@@ -94,11 +94,11 @@ rule qc_sample_summary1:
                 for fname in input.single:                                  
                     analysisID = os.path.basename(fname)[:-4]
                     possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
-                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
                     existing_columns = [col for col in possible_columns if col in filtered_df.columns]
                     aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
-                    preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
-                    baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
                     contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
                     outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t\n' )
 
@@ -126,11 +126,11 @@ rule qc_sample_summary:
                 for fname in input.single:
                     analysisID = os.path.basename(fname)[:-4]
                     possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
-                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
                     existing_columns = [col for col in possible_columns if col in filtered_df.columns]
                     aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
-                    preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
-                    baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
                     contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
                     bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contains(analysisID)]['RATE']).split()[1]                    
                     if not a_file['FileName'].str.contains(analysisID).any():
@@ -143,11 +143,11 @@ rule qc_sample_summary:
                 for fname in input.single:                                  
                     analysisID = os.path.basename(fname)[:-4]
                     possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
-                    filtered_df = precalling_file[precalling_file['Analysis ID'] == analysisID]
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
                     existing_columns = [col for col in possible_columns if col in filtered_df.columns]
                     aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
-                    preArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
-                    baitArtifact = str(precalling_file[precalling_file['Analysis ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
                     contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
                     if not a_file.isin([analysisID]).any().any():
                         outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\tY\n' )

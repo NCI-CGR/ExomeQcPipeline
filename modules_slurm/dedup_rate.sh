@@ -12,13 +12,13 @@ for i in $(awk -F"," '{if(NR>1){print $3"="$6"="$4"="$5"="$13}}' $MANIFEST); do
 	FLOWCELL=$(echo $i | cut -d= -f1);CGFID=$(echo $i | cut -d= -f2); 
 	LANE=$(echo $i | cut -d= -f3);INDEX=$(echo $i | cut -d= -f4);
 	SUBJECT=$(echo $i | cut -d= -f5);
-	FLOWCELL_REPORT=$(find /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/ -name "*${FLOWCELL}*.txt" | wc -l)
+	FLOWCELL_REPORT=$(find /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/ /DCEG/CGF/Sequencing/Illumina/Reanalysis/*Seq/PostRun_Analysis/Reports/ -type f -name "*${FLOWCELL}*.txt" -print -quit )
 
-	if [[ $FLOWCELL_REPORT > 0 ]]; then
-		DUP_RATE=`grep "$CGFID" /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/*${FLOWCELL}*.txt | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $13}}'`; 
-		PCR_DUP_READS=`grep "$CGFID" /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/*${FLOWCELL}*.txt | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $9}}'`;
-		OPTICAL_DUP_READS=`grep "$CGFID" /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/*${FLOWCELL}*.txt| grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $11}}'`;
-		TOTAL_READS=`grep "$CGFID" /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/*${FLOWCELL}*.txt | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $7}}'`;
+	if [[ -f $FLOWCELL_REPORT ]]; then
+		DUP_RATE=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $13}}'`; 
+		PCR_DUP_READS=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $9}}'`;
+		OPTICAL_DUP_READS=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $11}}'`;
+		TOTAL_READS=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $7}}'`;
 		DUP_READS=`echo "$PCR_DUP_READS + $OPTICAL_DUP_READS" | bc -l | xargs -I {} printf "%5.0f" {}`
 	else
 	#set the sample with no flowcell report found to be 0 at the moment
@@ -39,9 +39,9 @@ awk -F"\t" '{if($1 in array){array[$1]=array[$1]"\t"$4} else {array[$1]=$4}} END
 for i in `awk -F"\t" '{print $1}' ${OUTDIR}/lane_dup_rate.txt | sort | uniq`; do 
 	#MERGE_LOG=`ls -ltr /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/patch_build_bam_*/_build_bam_*${i}*.stderr | awk '{if ($5 != 0) print $9}'| tail -1`;  #nowadays we have empty stderr files
 	
-	TOTAL_READS=`grep ${i} ${OUTDIR}/lane_total_reads.txt | awk '{sum=0; for (i=2;i<=NF;i++)sum+=$i; print sum}'`; 
-	LANE_NUM=`grep ${i} ${OUTDIR}/lane_total_reads.txt | awk '{print NF-1}' `
-	PRIMARY_DUPLICATE_READS=`grep ${i} ${OUTDIR}/lane_dup_reads.txt | awk '{sum=0; for (i=2;i<=NF;i++) sum+=$i; print sum}'`; 
+	TOTAL_READS=`awk -F"\t" -v name="${i}" '{if($1==name){print}}' ${OUTDIR}/lane_total_reads.txt | awk '{sum=0; for (i=2;i<=NF;i++)sum+=$i; print sum}'`; 
+	LANE_NUM=`awk -F"\t" -v name="${i}" '{if($1==name){print}}' ${OUTDIR}/lane_total_reads.txt | awk '{print NF-1}' `
+	PRIMARY_DUPLICATE_READS=`awk -F"\t" -v name="${i}" '{if($1==name){print}}' ${OUTDIR}/lane_dup_reads.txt | awk '{sum=0; for (i=2;i<=NF;i++) sum+=$i; print sum}'`; 
 	#get the most recent secondary log
 	DEDUP_LOG=$(find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ -name "_build_bam_*${i}*.stderr"  -print0 | xargs -r -0 ls -1 -t | head -1)
 	if [[ -f ${DEDUP_LOG} ]]; then

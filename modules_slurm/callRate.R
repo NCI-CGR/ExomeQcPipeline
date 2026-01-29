@@ -9,14 +9,14 @@ if (length(args) < 1) {
 }
 
 path <- arguments[1]
-callRateTable <- file.path(path, "postcalling_qc/callRate_bychr.txt")
+callRateTable <- file.path(path, "callRate_bychr.txt")
 
 dat <- read.table(callRateTable, header=FALSE, sep="\t")
 colnames(dat)=c("CHROM","MISSING_RATE")
 
-dat2 <- read.table(file.path(path, "postcalling_qc/GT.txt"), header=TRUE, sep="\t")
+dat2 <- read.table(file.path(path, "GT.txt"), header=TRUE, sep="\t")
 
-jpeg(filename = file.path(path, "postcalling_qc/callRate_bychr.jpeg"), width = 1000, height = 480, units = "px",bg ="white")
+jpeg(filename = file.path(path, "callRate_bychr.jpeg"), width = 1000, height = 480, units = "px",bg ="white")
 
 ggplot(dat, aes(x=CHROM, y=MISSING_RATE)) +
 geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
@@ -25,7 +25,7 @@ theme(panel.grid = element_line(color = "grey", size = 0.5, linetype = 1), plot.
 
 dev.off()
 
-sink(file.path(path, "postcalling_qc/callRate_bychr.quantile.txt"))
+sink(file.path(path, "callRate_bychr.quantile.txt"))
 q = c(.0, .25, .5, .75, 1.0)
 quantile <- dat %>%
   group_by(CHROM) %>%
@@ -52,7 +52,7 @@ callRateSamp$group = unlist(li)
 
 colnames(callRateSamp)=c("MISSING_RATE","GROUP")
 
-jpeg(filename = file.path(path, "postcalling_qc/callRate_byGroup.jpeg"))
+jpeg(filename = file.path(path, "callRate_byGroup.jpeg"))
 
 ggplot(callRateSamp, aes(x=GROUP, y=MISSING_RATE)) +
 geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
