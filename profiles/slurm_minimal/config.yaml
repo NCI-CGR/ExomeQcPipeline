@@ -1,0 +1,23 @@
+executor: slurm
+default-resources:
+      - slurm_partition=defq,cgrq
+      - runtime=1h
+      - threads=1
+      - mem=4G
+jobs: 1000
+keep-going: true
+printshellcmds: true
+rerun-incomplete: true
+restart-times: 1
+slurm-logdir: logs
+slurm-keep-successful-logs: true
+slurm-efficiency-report: true
+slurm-no-account: true
+set-resources:
+      angsd:
+            runtime: 3h
+            cpus_per_task: 8
+            mem: 8G
+      fastNGSadmix:
+            runtime: 3h
+            mem: 16G

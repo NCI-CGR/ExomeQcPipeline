@@ -1,0 +1,412 @@
+#!/usr/bin/python
+import os
+import pandas as pd
+
+#outName = os.path.basename(os.path.dirname(config['project']))
+if config['MODE'] == 'somatic': 
+    rule table_sample_summary_somatic:
+        input:
+            pair_manifest
+        output:
+            project + '/word_doc/sample_summary.txt'
+        run:
+            GroupTumorDict = {}
+            GroupNormalDict = {}
+            NormalList = []
+            with open(output[0], 'w') as outfile, open(input[0]) as f:
+                outfile.write( 'DISEASE_GROUP\tTUMOR_COUNTS\tNORMAL_COUNTS' + '\n' )            
+                for line in f:
+                    GROUP=os.path.basename(line.split('\t')[0]).split('_')[0]
+                    tumor=os.path.basename(line.split('\t')[0])[:-4]                
+                    normal=os.path.basename(line.split('\t')[1])[:-4] 
+                    if GROUP in GroupTumorDict:
+                        GroupTumorDict[GROUP] += 1     
+                        if normal not in NormalList:
+                            NormalList.append(normal)
+                            GroupNormalDict[GROUP] += 1   
+                    else:
+                        GroupTumorDict[GROUP] = 1
+                        if normal not in NormalList:
+                            NormalList.append(normal)                        
+                            GroupNormalDict[GROUP] = 1
+                for i in GroupTumorDict:
+                    outfile.write( i + '\t' + str(GroupTumorDict[i])+ '\t' + str(GroupNormalDict[i]) + '\n' )    
+else:
+    rule table_sample_summary:
+        input:
+            #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
+            basechange = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/titv.txt',
+            single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()] #need to use for loop to include all sample single bam files
+        output:
+            project + '/word_doc/sample_summary.txt' 
+        run:
+            GroupDict = {}
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'DISEASE_GROUP\tSUBJECT_COUNTS\tSUBJECT_COUNTS_POSTFILTER' + '\n' )
+                a_file = open(input.basechange, 'r')
+                for fname in input.single:   
+                    #with open(fname, 'r') as infile: no need to open file
+                    GROUP=os.path.basename(os.path.dirname(fname))
+                    if GROUP in GroupDict:
+                        GroupDict[GROUP] += 1
+                    else:
+                        GroupDict[GROUP] = 1
+                for i in GroupDict:
+                    count = 0                    
+                    for number, line in enumerate(a_file): 
+                        if line.startswith(i): 
+                            count += 1  
+                    outfile.write( i + '\t' + str(GroupDict[i]) + '\t' + str(count) + '\n' )
+                    
+rule qc_sample_summary1:
+    input:
+        #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
+        single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()], #need to use for loop to include all sample single bam files
+        bamMatcher = bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
+        contaminationTable = project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output'
+    output:
+        project + '/word_doc/bam_stat.txt'
+    params:
+        precallingReport,
+        #project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
+        #bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else []
+    run:
+        contamination_file = pd.read_csv(input.contaminationTable, sep='\t')
+        precalling_file = pd.read_csv(params[0], sep='\t')
+        if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic':
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tbammatcher_Rate\tFiltered' + '\n' )                              
+                bammatcher_file = pd.read_csv(input.bamMatcher, sep='\t')
+                for fname in input.single:
+                    analysisID = os.path.basename(fname)[:-4]
+                    possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
+                    existing_columns = [col for col in possible_columns if col in filtered_df.columns]
+                    aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
+                    bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contains(analysisID)]['RATE']).split()[1]                    
+                    outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t' + bammatcherRate + '\t\n' )                     
+        else:           
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tFiltered' + '\n' )
+                for fname in input.single:                                  
+                    analysisID = os.path.basename(fname)[:-4]
+                    possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
+                    existing_columns = [col for col in possible_columns if col in filtered_df.columns]
+                    aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
+                    outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t\n' )
+
+rule qc_sample_summary:
+    input:
+        #single = lambda wildcards: [bam_location + '/' + group + '/' + item for item in sampleGroupDict.keys() + '.bam']
+        basechange = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic' else postcalling_qc_dir + '/titv.txt', 
+        single = lambda wildcards: [bam_location + '/' + sampleGroupDict[item] + '/' + item + '.bam' for item in sampleGroupDict.keys()], #need to use for loop to include all sample single bam files
+        bamMatcher = bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
+        contaminationTable = project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output'
+    output:
+        project + '/word_doc/filtered_sample.txt'
+    params:
+        precallingReport,
+        #project + '/subject_level_BAM_contamination/results/bam_location.txt.all.output',
+        #bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else []
+    run:
+        a_file = pd.read_csv(input.basechange, sep='\t')
+        contamination_file = pd.read_csv(input.contaminationTable, sep='\t')
+        precalling_file = pd.read_csv(params[0], sep='\t')
+        if config['MODE'] == 'tumor_only' or config['MODE'] == 'somatic':
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tbammatcher_Rate\tFiltered' + '\n' )                              
+                bammatcher_file = pd.read_csv(input.bamMatcher, sep='\t')
+                for fname in input.single:
+                    analysisID = os.path.basename(fname)[:-4]
+                    possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
+                    existing_columns = [col for col in possible_columns if col in filtered_df.columns]
+                    aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]                    
+                    bammatcherRate = str(bammatcher_file[bammatcher_file['SAMPLE'].str.contains(analysisID)]['RATE']).split()[1]                    
+                    if not a_file['FileName'].str.contains(analysisID).any():
+                        outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t' + bammatcherRate + '\tY\n' )        
+                    else:
+                        outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\t' + bammatcherRate + '\tN\n' )                     
+        else:           
+            with open(output[0], 'w') as outfile: 
+                outfile.write( 'SAMPLE\tAVERAGE_DEPTH\tPreadapter_Artifact\tBaitBias_Artifact\tContamination_Rate\tFiltered' + '\n' )
+                for fname in input.single:                                  
+                    analysisID = os.path.basename(fname)[:-4]
+                    possible_columns = ['AVG_COVERAGE', 'MEAN_COVERAGE'] #coverage column can be named AVG_COVERAGE for wes precalling qc report of MEAN_COVERAGE for wgs precalling qc report
+                    filtered_df = precalling_file[precalling_file['Analysis_ID'] == analysisID]
+                    existing_columns = [col for col in possible_columns if col in filtered_df.columns]
+                    aveDepth = str(filtered_df[existing_columns[0]]).split()[1] if existing_columns else pd.Series()
+                    preArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_PREADATPER_TOTAL_QSCORE']).split()[1]
+                    baitArtifact = str(precalling_file[precalling_file['Analysis_ID'] == analysisID]['LOWEST_BAITBIAS_TOTAL_QSCORE']).split()[1]
+                    contaminationRate = str(contamination_file[contamination_file['Analysis_ID'] == analysisID]['Contamination_rate']).split()[1]
+                    if not a_file.isin([analysisID]).any().any():
+                        outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\tY\n' )
+                    else:    
+                        outfile.write( analysisID + '\t' + aveDepth + '\t' + preArtifact + '\t' + baitArtifact +  '\t' + contaminationRate + '\tN\n' )
+      
+rule word_doc:
+    input:
+        template = config[data]['doc_template_somatic'] if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else config[data]['doc_template_germline'],
+        sample_summary = project + '/word_doc/sample_summary.txt',
+        fastqc = project + '/fastqc/multiqc_report.html', 
+        contamination_plot = project + '/bamContamination/bam_contamination_rate.png',
+        top10_contamination = project + '/bamContamination/top10_contamination_rate.txt',
+        aveCov_plot = project + '/coverage/Average_Coverage_caco.png', 
+        sex_plot = project + '/sex_check/sex_self_check.png',
+        ancestry_plot1 = ancestry_check_dir + '/procrustesPCASamples_PC1-PC2.png',
+        ancestry_plot2 = ancestry_check_dir + '/procrustesPCASamples_PC3-PC4.png',
+        subject_dup_plot = project + '/deduplication/subject_dup_rate.png',
+        top10_dup = project + '/deduplication/top10_dup_rate.txt',
+        insertSize_plot = project + '/precalling_qc/insertSize.png',
+        fold80_plot = project + '/precalling_qc/fold80.png' if not config['dataType'] == 'wgs' else [],
+        seqArtifact_plot = project + '/precalling_qc/seq_artifact.png',
+        oxidation_plot = project + '/precalling_qc/oxidation.png',
+        # summary_ue = 'exomeCQA/summary_ue.txt' if not config['MODE'] == 'wgs' else [],		
+        # summary_ccs = 'exomeCQA/summary_ccs.txt' if not config['MODE'] == 'wgs' else [],
+        # ccs_plot = 'exomeCQA/cohort_coverage_sparseness.png' if not config['MODE'] == 'wgs' else [],
+        # ue_plot = 'exomeCQA/unevenness.png' if not config['MODE'] == 'wgs' else [],
+        # top10_ue = 'exomeCQA/top10_ue.txt' if not config['MODE'] == 'wgs' else [],
+        total_count = project + '/postcalling_qc/variant_count.png' if config['MODE'] == 'germline' else [],
+        botton10_count = project + '/postcalling_qc/variant_outlier10.txt' if config['MODE'] == 'germline' else [],
+        titv_ratio = project + '/postcalling_qc/titv_ratio.png' if config['MODE'] == 'germline' else [],
+        botton10_titv = project + '/postcalling_qc/titv_outlier10.txt' if config['MODE'] == 'germline' else [],
+        relatedness = relatedness_dir + '/out.relatedness2' if config['MODE'] == 'germline' else [],
+        relatedness_hist = relatedness_dir + '/relatedness_hist.png' if config['MODE'] == 'germline' else [],
+        missingRate_hist = project + '/postcalling_qc/callRate_byGroup.jpeg' if config['MODE'] == 'germline' else [],
+        basechangeTxt = postcalling_qc_dir + '/ensemble_basechange.txt' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/basechange_all.txt',
+        basechange = postcalling_qc_dir + '/basechange_3d.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else postcalling_qc_dir + '/basechange_all.png',
+        basechange_distribution = postcalling_qc_dir + '/basechange_distribution.png'  if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],
+        basechange_bar = postcalling_qc_dir + '/basechange_bar.png' if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only' else [],  
+        bam_matcher_plot = bamMatcher_dir + '/bam_matcher_check.png' if config['MODE'] == 'somatic' else []
+    output:
+        doc = project + '/word_doc/' + outName + '_QC_Report.docx', 
+        R = project + '/word_doc/doc.R',
+        Rout = project + '/word_doc/doc.R.out'
+    run:
+        totSubs = len(SAMPLES)
+        buildName = outName.replace("build_", "")
+        bed = bedFile if not config['dataType'] == 'wgs' else []
+        exomeCQAgeneReport = exomeCQA_dir + '/exomeCQA_gene.chrALL' if not config['dataType'] == 'wgs' else []
+        exomeCQAexonReport = exomeCQA_dir + '/exomeCQA_exon.chrALL' if not config['dataType'] == 'wgs' else []
+        # geneNum = len(open(exomeCQAgeneReport).readlines(  )) if not config['MODE'] == 'wgs' else []
+        # exonNum = len(open(exomeCQAexonReport).readlines(  )) if not config['MODE'] == 'wgs' else []
+        precallingQCReport = precallingReport
+        laserDir = project.rstrip('/') + '/ExomeQcPipeline/' + ancestry_check_dir
+        fasqc = project.rstrip('/') + '/ExomeQcPipeline/fastqc/multiqc_report.html'
+        groupBasechangeDir = project.rstrip('/') + '/ExomeQcPipeline/' + postcalling_qc_dir
+        relatednessReport = project.rstrip('/') + '/ExomeQcPipeline/relatedness/out.relatedness2'
+        basechangeReport = project.rstrip('/') + '/ExomeQcPipeline/' + input.basechangeTxt
+        rTxt = '''library(officer)
+library(magrittr)
+library(flextable)
+
+table_1 <- read.table("''' + input.sample_summary + '''", header = TRUE)
+
+ft_1 <- regulartable(table_1, col_keys = names(table_1)) %>%
+    fontsize(size = 8, part = "all") %>%
+    fontsize(i = 1, size = 10, part = "header") %>%
+    color(i = 1, color = "#007FA6", part = "header") %>%
+    theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+    autofit()
+ft_1 <- align(ft_1, align = "center")
+
+table_2 <- read.table("''' + input.top10_dup + '''", header = TRUE)
+
+ft_2 <- regulartable(table_2, col_keys = names(table_2)) %>%
+    fontsize(size = 8, part = "all") %>%
+    fontsize(i = 1, size = 10, part = "header") %>%
+    color(i = 1, color = "#007FA6", part = "header") %>%
+    theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+    autofit()
+ft_2 <- align(ft_2, align = "center")
+
+table_3 <- read.table("''' + input.top10_contamination + '''", header = TRUE)
+
+ft_3 <- regulartable(table_3, col_keys = names(table_3)) %>%
+    fontsize(size = 8, part = "all") %>%
+    fontsize(i = 1, size = 10, part = "header") %>%
+    color(i = 1, color = "#007FA6", part = "header") %>%
+    theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+    autofit()
+ft_3 <- align(ft_3, align = "center")
+
+'''
+
+        if config['MODE'] == 'germline':
+            rTxt += '''
+table_6a <- read.table("''' + input.botton10_count + '''", header = TRUE)
+
+ft_6a <- regulartable(table_6a, col_keys = names(table_6a)) %>%
+    fontsize(size = 8, part = "all") %>%
+    fontsize(i = 1, size = 10, part = "header") %>%
+    color(i = 1, color = "#007FA6", part = "header") %>%
+    theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+    autofit()
+ft_6a <- align(ft_6a, align = "center")
+
+table_6b <- read.table("''' + input.botton10_titv + '''", header = TRUE)
+
+ft_6b <- regulartable(table_6b, col_keys = names(table_6b)) %>%
+    fontsize(size = 8, part = "all") %>%
+    fontsize(i = 1, size = 10, part = "header") %>%
+    color(i = 1, color = "#007FA6", part = "header") %>%
+    theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+    autofit()
+ft_6b <- align(ft_6b, align = "center")'''
+
+        # if not config['MODE'] == 'wgs':
+            # rTxt += '''  
+    # summary_ue <- read.table("''' + input.summary_ue + '''", header = TRUE, fill=TRUE)
+    # min = summary_ue$Min.
+    # q1 = summary_ue$X1st
+    # med = summary_ue$Qu.
+    # mean = summary_ue$Median
+    # q3 = summary_ue$Mean
+    # max=summary_ue$X3rd
+    # table_4a <- data.frame(min=min, q1=q1, med=med, mean=mean, q3=q3, max=max)
+
+    # ft_4a <- regulartable(table_4a, col_keys = names(table_4a)) %>%
+        # fontsize(size = 8, part = "all") %>%
+        # fontsize(i = 1, size = 10, part = "header") %>%
+        # color(i = 1, color = "#007FA6", part = "header") %>%
+        # theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+        # autofit()
+    # ft_4a <- align(ft_4a, align = "center")
+
+    # double_format <- function(x){
+      # sprintf("%.2f", x)
+    # }
+
+    # summary_ccs <- read.table("''' + input.summary_ccs + '''", header=TRUE, fill=TRUE)
+    # min = summary_ccs$Min.
+    # q1 = summary_ccs$X1st
+    # med = summary_ccs$Qu.
+    # mean = summary_ccs$Median
+    # q3 = summary_ccs$Mean
+    # max=summary_ccs$X3rd
+    # table_4b <- data.frame(min=min, q1=q1, med=med, mean=mean, q3=q3, max=max)
+
+    # ft_4b <- regulartable(table_4b, col_keys = names(table_4b)) %>%
+        # set_formatter("Min" = double_format, "1st.Qu" = double_format, "Median" = double_format, "Mean" = double_format, "3rd.Qu" = double_format, "Max" = double_format) %>%
+        # fontsize(size = 8, part = "all") %>%
+        # fontsize(i = 1, size = 10, part = "header") %>%
+        # color(i = 1, color = "#007FA6", part = "header") %>%
+        # theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+        # autofit()
+    # ft_4b <- align(ft_4b, align = "center")
+
+
+    # table_5 <- read.table("''' + input.top10_ue + '''", header = TRUE)
+
+    # ft_5 <- regulartable(table_5, col_keys = names(table_5)) %>%
+        # fontsize(size = 8, part = "all") %>%
+        # fontsize(i = 1, size = 10, part = "header") %>%
+        # color(i = 1, color = "#007FA6", part = "header") %>%
+        # theme_zebra(odd_header = "transparent", even_header = "transparent") %>%
+        # autofit()
+    # ft_5 <- align(ft_5, align = "center")            
+ 
+    # '''   
+    
+        rTxt += '''
+my_doc <- read_docx(path = "''' + input.template + '''") %>%
+    body_replace_all_text("SAMPLE_NUM", "''' + str(totSubs) + '''", fixed=TRUE) %>%
+    body_replace_all_text("BUILD_NAME", "''' + str(buildName) + '''", fixed=TRUE) %>%
+    body_replace_all_text("BED_FILE", "''' + str(bed) + '''", fixed=TRUE) %>%
+    body_replace_all_text("FASTQC_REPORT", "''' + str(fasqc) + '''", fixed=TRUE) %>%
+    body_replace_all_text("PRECALLING_QC_REPORT", "''' + str(precallingQCReport) + '''", fixed=TRUE) %>%
+    body_replace_all_text("LASER_DIR", "''' + str(laserDir) + '''", fixed=TRUE) %>%
+    body_replace_all_text("BASECHANGE TABLE", "''' + str(basechangeReport) + '''", fixed=TRUE) %>%
+    
+    cursor_reach(keyword = "Table 1. Subject count breakdown before QC") %>%
+    body_add_flextable(value = ft_1) %>%
+    
+    cursor_reach(keyword = "Figure 1. subject level duplication rate by number of lanes") %>%
+    body_add_img(src = "''' + input.subject_dup_plot + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "residual duplication rate after lane dup removed.") %>%
+    body_add_flextable(value = ft_2) %>%
+    cursor_reach(keyword = "Figure 2. sorted contamination rate by subjects") %>%
+    body_add_img(src = "''' + input.contamination_plot + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Table 3.  10 samples with highest contamination rate") %>%
+    body_add_flextable(value = ft_3) %>%
+
+    cursor_reach(keyword = "Figure 3. coverage scatter plot for all exome samples, with cases and controls separated") %>%
+    body_add_img(src = "''' + input.aveCov_plot + '''", width = 5, height = 5, pos = "before") %>%
+    '''
+        if not config['dataType'] == 'wgs':           
+            rTxt += '''              
+    cursor_reach(keyword = "Figure 5a. histogram for all Fold 80 base penalty for samples") %>%
+    body_add_img(src = "''' + input.fold80_plot + '''", width = 5, height = 5, pos = "before") %>%   
+    cursor_reach(keyword = "Figure 5b. boxplot for median and mean insert sizes") %>%
+    body_add_img(src = "''' + input.insertSize_plot + '''", width = 5, height = 5, pos = "before") %>% '''
+        else:    
+            rTxt += '''     
+    cursor_reach(keyword = "Figure 5. boxplot for median and mean insert sizes") %>%
+    body_add_img(src = "''' + input.insertSize_plot + '''", width = 5, height = 5, pos = "before") %>% '''
+    
+        rTxt += '''
+              
+    cursor_reach(keyword = "Figure 6. boxplot of average oxidation q score and lowest oxidation q score") %>%
+    body_add_img(src = "''' + input.oxidation_plot + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Figure 7. boxplot of Lowest Preadapter and Baitbias Total Score for all samples") %>%
+    body_add_img(src = "''' + input.seqArtifact_plot + '''", width = 5, height = 5, pos = "before") %>%
+
+    cursor_reach(keyword = "Figure 8. ChrY/ChrX reads ratio for all subjects") %>%
+    body_add_img(src = "''' + input.sex_plot + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Figure 9. Ancestry estimation for all subjects") %>%
+    body_add_img(src = "''' + input.ancestry_plot1 + '''", width = 5, height = 5, pos = "before") %>%
+    body_add_img(src = "''' + input.ancestry_plot2 + '''", width = 5, height = 5, pos = "before") %>%
+    ''' 
+        if config['MODE'] == 'somatic':
+            rTxt += '''         
+    cursor_reach(keyword = "Figure 10a. VAF distribution across all base changes") %>%
+    body_add_img(src = "''' + input.basechange_distribution + '''", width = 5, height = 5, pos = "before") %>%   
+    cursor_reach(keyword = "Figure 10b. base change counts per disease group") %>%
+    body_add_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") %>%    
+    cursor_reach(keyword = "Figure 11. scatter plot of testing site count against concordant rate") %>%
+    body_add_img(src = "''' + input.bam_matcher_plot + '''", width = 5, height = 5, pos = "before") '''
+        elif config['MODE'] == 'tumor_only':
+            rTxt += '''         
+    cursor_reach(keyword = "Figure 10a. VAF distribution across all base changes") %>%
+    body_add_img(src = "''' + input.basechange_distribution + '''", width = 5, height = 5, pos = "before") %>%   
+    cursor_reach(keyword = "Figure 10b. base change counts per disease group") %>%
+    body_add_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") '''
+        else:    
+            rTxt += '''     
+    body_replace_all_text("GROUP_BASECHANGE", "''' + str(groupBasechangeDir) + '''", fixed=TRUE) %>%
+    body_replace_all_text("RELATEDNESS_REPORT", "''' + str(relatednessReport) + '''", fixed=TRUE) %>%
+    
+    cursor_reach(keyword = "Figure 10a. Ensemble filtered variant count by sample") %>%
+    body_add_img(src = "''' + input.total_count + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Table 6a. 10 samples with lowest variant count ") %>%
+    body_add_flextable(value = ft_6a) %>%	
+    cursor_reach(keyword = "Table 6b. 10 samples with lowest ti/tv ratio") %>%
+    body_add_flextable(value = ft_6b) %>%
+    cursor_reach(keyword = "Figure 10b. Ensemble filtered variant ti/tv ratio by sample") %>%
+    body_add_img(src = "''' + input.titv_ratio + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Figure 10c. base change counts per disease group") %>%
+    body_add_img(src = "''' + input.basechange + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Figure 10d. missing call rate per disease group") %>%
+    body_add_img(src = "''' + input.missingRate_hist + '''", width = 5, height = 5, pos = "before") %>%
+    cursor_reach(keyword = "Figure 11. off-diagonal pairwise sample relatedness kinship coefficient") %>%
+    body_add_img(src = "''' + input.relatedness_hist + '''", width = 5, height = 5, pos = "before") %>%'''
+    
+        rTxt += '''
+print(my_doc, target = "''' + output.doc + '''")
+'''
+        with open(output.R, 'w')  as R:
+            R.write(rTxt)
+        shell('R --vanilla < {output.R} > {output.Rout}')
+    
+
+#    body_add_img(src = "''' + input.mosdepth_plot + '''", width = 6, height = 6, pos = "before") %>%

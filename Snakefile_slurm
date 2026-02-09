@@ -1,0 +1,139 @@
+#!/usr/bin/python
+
+import glob
+import sys
+import os
+from glob import glob
+from glob import iglob
+from scripts.utils import initializeConfigVariables
+
+manifest, project, version, GROUPS, SAMPLES, sampleGroupDict, refFile, getBam = initializeConfigVariables(config)
+
+configfile: "modules_slurm/config.yaml"
+outName = os.path.basename(os.path.dirname(config['project']))
+
+bam_location = config['bam_location']
+
+# project = config['project'].rstrip("/")
+# manifest = config['manifest']
+# refFile = config['ref']
+# version = config['version']
+data = config['dataType']
+bedFile = config['capturekit']
+precallingReport = config['precalling_report']
+#exomeCQAgeneReport = config['exomCQA_gene']
+#exomeCQAexonReport = config['exomCQA_exon']
+
+sex_check_dir = project + '/sex_check'
+postcalling_qc_dir = project + '/postcalling_qc'
+coverage_dir = project + '/coverage'
+contamination_dir = project + '/bamContamination'
+ancestry_check_dir = project + '/ancestry'
+exomeCQA_dir = project + '/exomeCQA'
+deduplication_dir = project + '/deduplication'
+precalling_dir = project + '/precalling_qc'
+relatedness_dir = project + '/relatedness'
+fastqc_dir = project + '/fastqc'
+
+# GROUPS=[]
+# SAMPLES = []
+# sampleGroupDict = {}
+CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
+sampleCount=len(SAMPLES)
+
+# ########################
+# #Germline call
+
+# with open(manifest) as f:
+    # next(f)
+    # for line in f:
+        # (group, analysisid) = [line.split(',')[i] for i in [6,12]] #with list index [6,11,12], it will throw error "list indices must be integers or slices, not tuple". Need to explicitly specify by the loop, because you cannot index list
+        # sample = group + "_" + analysisid
+
+        # if (sample not in SAMPLES):
+            # SAMPLES.append(sample)
+            # sampleGroupDict[sample] = group        
+            # if group not in GROUPS:            
+                # GROUPS.append(group)	
+                
+# def getBam(wildcards):
+    # (group) = sampleGroupDict[wildcards.sample]
+    # return (glob(bam_location + '/' + group + '/' + wildcards.sample + '.bam')) #Why have to use glob instead of using the string
+
+# #print(SAMPLES)
+
+# def getReport(wildcards):
+    # return glob(project + '/*coverage_report*.txt')
+	
+	
+#for bam_subdir in glob(bam_location + '/*/'):
+#    GROUPS.append(os.path.basename(bam_subdir.strip('/')))
+
+########################
+#Somatic pair call
+
+if config['MODE'] == 'somatic': 
+
+    pair_manifest = config['pairs']
+    bamMatcher_dir = project + 'bamMatcher'
+    bamMatcherExe = config['BamMatcher']
+
+    PAIRS = []
+    tumorDict = {}
+    normalDict = {}
+
+    with open(pair_manifest) as f:
+        for line in f:
+            (tumor, normal, vcf) = line.split()
+            sample = os.path.basename(vcf)[:-4]
+            PAIRS.append(os.path.basename(vcf)[:-4])
+            tumorName = os.path.basename(tumor)[:-4]
+            normalName = os.path.basename(normal)[:-4]
+            tumorDict[sample] = (tumor)
+            normalDict[sample] = (normal)
+
+    def get_tumor(wildcards):
+        (file) = tumorDict[wildcards.sample]
+        return file
+
+    def get_normal(wildcards):
+        (file) = normalDict[wildcards.sample]
+        return file     
+
+    include: 'modules_slurm/Snakefile_bam_matcher'
+    include: 'modules_slurm/Snakefile_coverage_plot'
+
+if config['MODE'] == 'somatic' or config['MODE'] == 'tumor_only':
+    print(config['MODE'])
+    
+    ensemble_dir = config['ensemble_dir']
+    include: "modules_slurm/Snakemake_utils"
+    include: 'modules_slurm/Snakefile_coverage_plot'
+    include: 'modules_slurm/Snakefile_postcalling_plot_somatic'
+else:
+    ensemble_vcf = config['ensemble_vcf']
+    
+    include: "modules_slurm/Snakemake_utils"
+    #include: 'modules_slurm/Snakefile_relatedness'
+    include: 'modules_slurm/Snakefile_coverage_plot'
+    include: 'modules_slurm/Snakefile_postcalling_plot'
+    include: 'modules_slurm/Snakefile_relatedness'
+
+#launch all rules    
+include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
+#include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
+#include: 'modules_slurm/Snakefile_contamination_plot'
+include: 'modules_slurm/Snakefile_duplication_plot'
+include: 'modules_slurm/Snakefile_fastqc'   
+    
+include: 'modules_slurm/Snakefile_sex_plot'
+include: 'modules_slurm/Snakefile_pre_calling_plot'
+include: 'modules_slurm/Snakefile_doc'
+    
+rule all:
+    input:
+        bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
+        #basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'germline' else [], 
+        PCA = postcalling_qc_dir + '/PC1-PC2.pdf' if (config['MODE'] == 'germline' and sampleCount > 50) else [],
+        QCreport = project + '/word_doc/filtered_sample.txt',
+        word_report = project + '/word_doc/' + outName + '_QC_Report.docx'

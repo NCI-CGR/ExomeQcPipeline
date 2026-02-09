@@ -25,7 +25,7 @@ rule deduplication_table:
     params:
         deduplication_dir
     shell:
-        'sh ./modules/dedup_rate.sh {input} {params}'
+        'sh ./modules_slurm/dedup_rate.sh {input} {params}'
 
 rule deduplication_plot:
     input:
@@ -43,6 +43,7 @@ rule deduplication_plot:
         library(plyr)
         require(reshape2)
         library(reshape2)
+        options(bitmapType='cairo')
         no_col <- (max(count.fields("''' + str(input.merged_dup_rate) + '''", sep = "\t")) -4)
         data_deduplication_lane <- read.table("''' + str(input.merged_dup_rate) + '''", header = FALSE, fill=TRUE, sep = "\t",col.names=c("SUBJECT","NUM_OF_LANE","TOTAL_DUP_RATE", "SECONDARY", 1:no_col) )
         png("''' + str(output.png_lane_dup_rate) + '''")

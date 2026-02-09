@@ -8,9 +8,9 @@ rule exomeCQA_bedCov:
     output:
         exomeCQA_dir + '/bedcov/{sample}_coverage.txt'
     threads:
-       10 
+       5 
     shell:
-        '. /etc/profile.d/modules.sh; module load bedtools/2.26.0;'
+        'module load bedtools;'
         'coverageBed -a {input.bed} -b {input.bam} -d > {output}'
 
 rule exomeCQA_genInd:
@@ -21,7 +21,7 @@ rule exomeCQA_genInd:
     threads:
         2
     shell:
-        '/CGF/Bioinformatics/Production/software/ExomeCQA/genIndex {input} > {output}'
+        '/DCEG/CGF/Bioinformatics/Production/software/ExomeCQA/genIndex {input} > {output}'
 		
 rule exomeCQA:
     input:
@@ -34,7 +34,7 @@ rule exomeCQA:
     threads:
         20
     shell:
-        '/CGF/Bioinformatics/Production/software/ExomeCQA/ExomeCQA {params} {output.exon} {output.gene}'
+        '/DCEG/CGF/Bioinformatics/Production/software/ExomeCQA/ExomeCQA {params} {output.exon} {output.gene}'
 		
 rule exomeCQA_exon_score:
     input:
@@ -42,17 +42,21 @@ rule exomeCQA_exon_score:
         gene_input = exomeCQA_dir + '/exomeCQA_gene.chrALL'
     output:
         exon_output = exomeCQA_dir + '/exomeCQA_exon.txt',
-        gene_output = exomeCQA_dir + '/exomeCQA_gene.txt'
-    params:
-        exomeCQA_dir + '/gene_UE.chrALL'
+#        gene_output = exomeCQA_dir + '/exomeCQA_gene.txt'
+#    params:
+        ue_output = exomeCQA_dir + '/gene_UE.chrALL'
     shell:
-        '. /etc/profile.d/modules.sh; module load python/2.7.5 glu;'
+#        '. /etc/profile.d/modules.sh; module load python/2.7.5 glu;'
         '''awk -F"\t" 'BEGIN{{print "Chr\tStart\tEnd\tGene\tCCS\tUE"}} {{print $1"\t"$2"\t"$3"\t"$4"\t"$9"\t"$16}}' {input.exon_input} > {output.exon_output}; '''
-        '''sort -k1,4 {input.exon_input} | awk '{{arr[$1"\t"$4]+= $16; count[$1"\t"$4] += 1}}END{{for (a in arr) {{print a"\t" arr[a] / count[a]}} }}' > {params};'''
-        'glu util.join  -1 1,2 -2 1,2 -j inner {input.gene_input} {params} -o {output.gene_output}'
+        '''sort -k1,4 {input.exon_input} | awk '{{arr[$1"\t"$4]+= $16; count[$1"\t"$4] += 1}}END{{for (a in arr) {{print a"\t" arr[a] / count[a]}} }}' > {output.ue_output};'''
+#        'glu util.join  -1 1,2 -2 1,2 -j inner {input.gene_input} {params} -o {output.gene_output}'
 					
 rule exomeCQA_plot:
     input:
+        gene_input = exomeCQA_dir + '/exomeCQA_gene.chrALL',
+        #exon_output = exomeCQA_dir + '/exomeCQA_exon.txt',
+        ue_output = exomeCQA_dir + '/gene_UE.chrALL'
+    params:
         exomeCQA_dir + '/exomeCQA_gene.txt'
     output:
         summary_ccs = exomeCQA_dir + '/summary_ccs.txt',
@@ -65,9 +69,17 @@ rule exomeCQA_plot:
     run:
         rTxt = '''
         library(ggplot2)
-        data_exomeCQA <- read.table("''' + str(input) + '''", header = FALSE, sep = "\t")
-        data_exomeCQA2 <- subset(data_exomeCQA, data_exomeCQA[,4] >= 1)
-        names(data_exomeCQA) <- c("Chr","Gene","CCS","UE")
+        library(dplyr)
+        data1 <- read.table("''' + str(input.gene_input) + '''", header = FALSE, sep = "\t")
+        data2 <- read.table("''' + str(input.ue_output) + '''", header = FALSE, sep = "\t")
+        colnames(data1) = c("Chr","Gene","CCS")
+        colnames(data2) = c("Chr","Gene","UE")
+        data_exomeCQA = inner_join(data1, data2, by=c("Chr"="Chr", "Gene"="Gene"))
+        data_exomeCQA2 <- subset(data_exomeCQA, data_exomeCQA$UE >= 1)
+        
+        sink("''' + str(params) + '''")
+        print(data_exomeCQA)
+        sink()
         sink("''' + str(output.summary_ccs) + '''")
         print(head(summary(data_exomeCQA$CCS),6))
         sink() 

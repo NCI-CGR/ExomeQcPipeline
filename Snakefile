@@ -21,11 +21,19 @@ precallingReport = config['precalling_report']
 #exomeCQAgeneReport = config['exomCQA_gene']
 #exomeCQAexonReport = config['exomCQA_exon']
 
+<<<<<<< HEAD
 gender_check_dir = 'gender_check'
 postcalling_qc_dir = 'postcalling_qc'
 coverage_dir = 'coverage'
 contamination_dir = 'bamContamination'
 ancestry_check_dir = 'ancestry'
+=======
+sex_check_dir = 'sex_check'
+postcalling_qc_dir = 'postcalling_qc'
+coverage_dir = 'coverage'
+contamination_dir = 'bamContamination'
+ancestry_check_dir = 'laser'
+>>>>>>> dev
 exomeCQA_dir = 'exomeCQA'
 hgdpDir = 'modules/HGDP'
 deduplication_dir = 'deduplication'
@@ -76,7 +84,11 @@ if config['MODE'] == 'somatic':
     bamMatcher_dir = 'bamMatcher'
     bamMatcherExe = config['BamMatcher']
 
+<<<<<<< HEAD
     SAMPLES = []
+=======
+    PAIRS = []
+>>>>>>> dev
     tumorDict = {}
     normalDict = {}
 
@@ -84,7 +96,11 @@ if config['MODE'] == 'somatic':
         for line in f:
             (tumor, normal, vcf) = line.split()
             sample = os.path.basename(vcf)[:-4]
+<<<<<<< HEAD
             SAMPLES.append(os.path.basename(vcf)[:-4])
+=======
+            PAIRS.append(os.path.basename(vcf)[:-4])
+>>>>>>> dev
             tumorName = os.path.basename(tumor)[:-4]
             normalName = os.path.basename(normal)[:-4]
             tumorDict[sample] = (tumor)
@@ -104,11 +120,16 @@ if config['MODE'] == 'somatic':
     include: 'modules/Snakefile_bam_matcher'
     
 #launch all rules    
+<<<<<<< HEAD
 #include: 'modules/Snakefile_ancestry_plot'
+=======
+include: 'modules/Snakefile_ancestry_plot'
+>>>>>>> dev
 #include: 'modules/Snakefile_ancestry_plot_by_group'
 include: 'modules/Snakefile_contamination_plot'
 include: 'modules/Snakefile_coverage_plot'
 include: 'modules/Snakefile_duplication_plot'
+<<<<<<< HEAD
 #include: 'modules/Snakefile_fastqc'   
 
 if not config['MODE'] == 'wgs':
@@ -123,6 +144,18 @@ include: 'modules/Snakefile_pre_calling_plot'
 if config['MODE'] == 'somatic' or 'tumor_only':
     include: 'modules/Snakefile_postcalling_plot_somatic'
     include: 'modules/Snakefile_ancestry_plot_laser'
+=======
+include: 'modules/Snakefile_fastqc'   
+
+if not config['MODE'] == 'wgs':
+    include: 'modules/Snakefile_exomeCQA_plot'
+    
+include: 'modules/Snakefile_sex_plot'
+include: 'modules/Snakefile_pre_calling_plot'
+
+if config['MODE'] == 'somatic':
+    include: 'modules/Snakefile_postcalling_plot_somatic'
+>>>>>>> dev
 else:    
     include: 'modules/Snakefile_relatedness'
     include: 'modules/Snakefile_postcalling_plot'
@@ -132,5 +165,9 @@ include: 'modules/Snakefile_doc'
 rule all:
     input:
         bamMatcher_dir + '/bam_matcher_report_all.txt' if config['MODE'] == 'somatic' else [],
+<<<<<<< HEAD
         basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if config['MODE'] == 'wgs' or config['MODE'] == 'wes' else [], 
+=======
+        basechange_group = expand(postcalling_qc_dir + '/basechange_{group}.png', group = GROUPS) if not config['MODE'] == 'somatic' else [], 
+>>>>>>> dev
         word_report = 'word_doc/' + outName + '_QC_Report.docx'

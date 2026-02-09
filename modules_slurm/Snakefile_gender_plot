@@ -21,23 +21,23 @@ rule XYratio_single:
     output:
         project + '/gender_concordance_check/intermediate_files/counts/{sample}_X_Y_COUNTS.txt' 
     shell:
-        '. /etc/profile.d/modules.sh; module load samtools;'
+        'module load samtools;'
         'Xcount=$(samtools view -c {input} chrX );'
         'Ycount=$(samtools view -c {input} chrY );'
         'echo -e "{wildcards.sample}\t${{Xcount}}\t${{Ycount}}" > {output}'
    
 rule XYratio_table:
     input:
-        count = expand(project + '/gender_concordance_check/intermediate_files/counts/{sample}_X_Y_COUNTS.txt', sample = SAMPLES),
+        single = expand(project + '/gender_concordance_check/intermediate_files/counts/{sample}_X_Y_COUNTS.txt', sample = SAMPLES),
         Manifest = manifest
     output:
-        gender_check_dir + '/XYratio_table.txt'
+        sex_check_dir + '/XYratio_table.txt'
     params:
 #        Manifest = getManifest, get error message of 'generator' object is not subscriptable, when use this function at params.
-        merged_table = gender_check_dir + '/XYratio_merged.txt'
+        merged_table = sex_check_dir + '/XYratio_merged.txt'
     run:
         with open(params.merged_table, 'w') as mergedfile:
-            for fname in input.count:
+            for fname in input.single:
                 with open(fname) as infile:
                     for line in infile:
                         mergedfile.write(line)
@@ -59,17 +59,18 @@ rule XYratio_table:
 
 rule gender_plot:
     input:
-        gender_check_dir + '/XYratio_table.txt'
+        sex_check_dir + '/XYratio_table.txt'
     output:
-        png_gender = gender_check_dir + '/gender_check.png',
-        outlier_table = gender_check_dir + '/gender_outlier.txt',
-        R = gender_check_dir + '/gender_check.R',
-        Rout = gender_check_dir + '/gender_check.R.out'
+        png_gender = sex_check_dir + '/sex_check.png',
+        outlier_table = sex_check_dir + '/gender_outlier.txt',
+        R = sex_check_dir + '/gender_check.R',
+        Rout = sex_check_dir + '/gender_check.R.out'
     run:
         rTxt = '''
         library(ggplot2)
         library(dplyr)
         data_gender <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
+        options(bitmapType='cairo')
         png("''' + str(output.png_gender) + '''", 6.5, 6.5, "in", res = 300)
         colors <- c("Male"=rgb(0, 0, 1, .3), "Unknown"=rgb(1, 0, 0, .3), "Female"=rgb(0, 1, 0, .3),"Other"=rgb(.75, .75, .75, .3) )
         sortData <- arrange(data_gender, IDENTIFILER_GENDER, YXratio)

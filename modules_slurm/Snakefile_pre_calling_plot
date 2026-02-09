@@ -15,7 +15,7 @@ rule pre_calling_plot:
         config['precalling_report']
     output:
         png_aritifact = precalling_dir + '/seq_artifact.png',
-        png_foldeighty = precalling_dir + '/fold80.png' if not config['MODE'] == 'wgs' else [],
+        png_foldeighty = precalling_dir + '/fold80.png' if not config['dataType'] == 'wgs' else [],
         png_oxidation = precalling_dir + '/oxidation.png',
         png_insertSize = precalling_dir + '/insertSize.png',        
         R = precalling_dir + '/precalling_qc_plot.R',
@@ -23,6 +23,7 @@ rule pre_calling_plot:
     run:
         rTxt = '''
         library(ggplot2)
+        options(bitmapType='cairo')
         data_precalling <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
         png("''' + str(output.png_aritifact) + '''")
         boxplot(data_precalling$LOWEST_PREADATPER_TOTAL_QSCORE,data_precalling$LOWEST_BAITBIAS_TOTAL_QSCORE, names = c("Preadapter Artifact", "Baitbias Artifact"),ylab = "LOWEST_TOTAL_QSCORE", main = "CollectSequencingArtifactMetrics",  outline=FALSE)
@@ -55,4 +56,4 @@ rule count_lowest_predatpter_baitbias_sample:
     output:
         precalling_dir + '/lowest_predatpter_baitbias_sample.csv'
     shell:
-        '. /etc/profile.d/modules.sh; sh modules/count_lowest_predatpter_baitbias_sample.sh {input} {output}'
+        'sh modules/count_lowest_predatpter_baitbias_sample.sh {input} {output}'
