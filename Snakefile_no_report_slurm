@@ -162,6 +162,7 @@ rule all:
         postcalling_qc_dir + '/callRate_byGroup.jpeg' if ( config['post_calling_check'] and config['MODE'] == 'germline' ) else [],
         postcalling_qc_dir + '/basechange_3d.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],        
         postcalling_qc_dir + '/basechange_distribution.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],
+        postcalling_qc_dir + '/basechange_bar.png' if ( config['post_calling_check'] and config['MODE'] == 'somatic' ) or ( config['post_calling_check'] and config['MODE'] == 'tumor_only' ) else [],
         project + '/relatedness/relatedness.png' if ( config['relatedness_check'] and config['MODE'] == 'germline' ) else [],
         project + '/fastqc/multiqc_report.html',
         project + '/word_doc/bam_stat.txt'

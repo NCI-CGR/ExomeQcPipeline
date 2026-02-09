@@ -13,22 +13,23 @@ contamination_dir = project + '/bamContamination'
      
 rule run_verifyBamID:
     input:
-        getBam
+        depth = coverage_dir + '/Final_merged_coverage.txt',
+        bam = getBam
     output:
         out1 = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}.selfSM',
         #match = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}.bestSM'
     params:
         outDir = project + '/subject_level_BAM_contamination/results/tmp_working/{sample}',
         ref = refFile,
-        depth = coverage_dir + '/Final_merged_coverage.txt',
+
         omnivcf = config[version]['omniVcf']
     singularity: "docker://griffan/verifybamid2"
     shell:
         #'/DCEG/CGF/Bioinformatics/Production/BZhu/bin/verifyBamID_1.1.0/verifyBamID/bin/verifyBamID --ignoreRG --chip-none --precise --best --vcf {params.omnivcf} --bam {input} --out {params.outDir}'     
         '''
-        cov=$(awk -F"\t" -v samp={wildcards.sample} '{{if($1==samp){{print $3}} }}' {params.depth})
+        cov=$(awk -F"\t" -v samp={wildcards.sample} '{{if($1==samp){{print $3}} }}' {input.depth})
         if [[ $cov > 1 ]];then
-            VerifyBamID --BamFile {input} --UDPath {params.omnivcf}.dat.UD --BedPath {params.omnivcf}.dat.bed --MeanPath {params.omnivcf}.dat.mu --Reference {params.ref} --Output {params.outDir}
+            VerifyBamID --BamFile {input.bam} --UDPath {params.omnivcf}.dat.UD --BedPath {params.omnivcf}.dat.bed --MeanPath {params.omnivcf}.dat.mu --Reference {params.ref} --Output {params.outDir}
         else
             echo -e "#SEQ_ID\tRG	CHIP_ID	#SNPS	#READS	AVG_DP	FREEMIX\n{wildcards.sample}	NA	NA	NA	NA\tNA	NA" > {output}
         fi

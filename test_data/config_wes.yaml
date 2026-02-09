@@ -8,7 +8,7 @@ ref: /DCEG/CGF/Resources/Data/genome/hg19_canonical_correct_chr_order.fa  ##/DCE
 version: "hg19" #hg38
 
 #capturekit: /DCEG/CGF/Bioinformatics/Production/data/hg38/BedFiles/Homo_sapiens_assembly38.bed
-capturekit: /DCEG/Projects/Exome/SequencingData/BED_FILES/seqcap_EZ_Exome_v3_v3utr_intersect_correct.bed
+capturekit: /DCEG/Projects/Exome/SequencingData/BED_FILES/NimbleGen_V3UTR_V3_intersect_hg19/seqcap_EZ_Exome_v3_v3utr_intersect_correct.bed
 
 dataType: wes #wgs
 MODE: germline #germline, somatic, tumor_only
