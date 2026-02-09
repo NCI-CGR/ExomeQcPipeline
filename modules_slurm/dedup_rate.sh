@@ -15,10 +15,10 @@ for i in $(awk -F"," '{if(NR>1){print $3"="$6"="$4"="$5"="$13}}' $MANIFEST); do
 	FLOWCELL_REPORT=$(find /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/ /DCEG/CGF/Sequencing/Illumina/Reanalysis/*Seq/PostRun_Analysis/Reports/ -type f -name "*${FLOWCELL}*.txt" -print -quit )
 
 	if [[ -f $FLOWCELL_REPORT ]]; then
-		DUP_RATE=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $13}}'`; 
-		PCR_DUP_READS=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $9}}'`;
-		OPTICAL_DUP_READS=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $11}}'`;
-		TOTAL_READS=`grep "$CGFID" $FLOWCELL_REPORT | grep "$INDEX" | awk -F"\t" -v lane=$LANE '{if($3==lane){print $7}}'`;
+		DUP_RATE=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if($1==id && $2==index && $3==lane){print $13}}' $FLOWCELL_REPORT`; 
+		PCR_DUP_READS=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if($1==id && $2==index && $3==lane){print $9}}' $FLOWCELL_REPORT`;
+		OPTICAL_DUP_READS=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if$1==id && $2==index && ($3==lane){print $11}}' $FLOWCELL_REPORT`;
+		TOTAL_READS=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if($1==id && $2==index && $3==lane){print $7}}' $FLOWCELL_REPORT`;
 		DUP_READS=`echo "$PCR_DUP_READS + $OPTICAL_DUP_READS" | bc -l | xargs -I {} printf "%5.0f" {}`
 	else
 	#set the sample with no flowcell report found to be 0 at the moment
@@ -43,7 +43,7 @@ for i in `awk -F"\t" '{print $1}' ${OUTDIR}/lane_dup_rate.txt | sort | uniq`; do
 	LANE_NUM=`awk -F"\t" -v name="${i}" '{if($1==name){print}}' ${OUTDIR}/lane_total_reads.txt | awk '{print NF-1}' `
 	PRIMARY_DUPLICATE_READS=`awk -F"\t" -v name="${i}" '{if($1==name){print}}' ${OUTDIR}/lane_dup_reads.txt | awk '{sum=0; for (i=2;i<=NF;i++) sum+=$i; print sum}'`; 
 	#get the most recent secondary log
-	DEDUP_LOG=$(find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ -name "_build_bam_*${i}*.stderr"  -print0 | xargs -r -0 ls -1 -t | head -1)
+	DEDUP_LOG=$(find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ \( -name "step2_gatk_build_bam_for_single_name_v4_${i}.log" -o -name "_build_bam_*${i}*.stderr" \) -print0 | xargs -r -0 ls -1 -t | head -1)
 	if [[ -f ${DEDUP_LOG} ]]; then
 	    SECONDARY_DUPLICATE_READS=`find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ -name "_build_bam_*${i}*.stderr" -print0 | xargs -0 grep "records as duplicates" | head -1 |cut -d" " -f3` # grep the duplicate record for all find output and use the top one.
 	else
