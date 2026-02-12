@@ -3,17 +3,20 @@
 module load python3/3.10.2 singularity slurm R 
 
 DATE=$(date +%y%m%d)
-mkdir -p logs_${DATE}
+proDir=$(awk '($0~/^project:/){print $2}' modules_slurm/config.yaml | sed "s/['\"]//g")
+mkdir -p ${proDir}/logs_${DATE}
 
 
 snakemake --unlock -s Snakefile_slurm --configfile modules_slurm/config.yaml
 
-sbcmd="sbatch --time=8:00:00 --mem=64g --cpus-per-task={threads} --output=logs_${DATE}/snakejob_%j.out"
+sbcmd="sbatch --time=8:00:00 --mem=64g --cpus-per-task={threads} --output=${proDir}/logs_${DATE}/snakejob_%j.out"
 
-echo "#!/bin/sh" > logs_${DATE}/run_snakefile_slurm.sbatch
+echo "#!/bin/sh" > ${proDir}/logs_${DATE}/run_snakefile_slurm.sbatch
 
-echo "module load python3/3.10.2 singularity slurm R; snakemake -pr -s Snakefile_slurm --use-singularity --singularity-args \"--bind /DCEG,/scratch\" --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules_slurm/config.yaml --cluster \"$sbcmd\" --cluster-config cluster_slurm.yaml --latency-wait 120" >> logs_${DATE}/run_snakefile_slurm.sbatch
+echo "module load python3/3.10.2 singularity slurm R" >> ${proDir}/logs_${DATE}/run_snakefile_slurm.sbatch
+echo "python print_version.py" >> ${proDir}/logs_${DATE}/run_snakefile_report_slurm.sbatch
+echo "snakemake -pr -s Snakefile_slurm --use-singularity --singularity-args \"--bind /DCEG,/scratch\" --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules_slurm/config.yaml --cluster \"$sbcmd\" --cluster-config cluster_slurm.yaml --latency-wait 120" >> ${proDir}/logs_${DATE}/run_snakefile_slurm.sbatch
 
 #qsub -cwd -q all.q -N run_Snakefile  -o logs_${DATE}/Snakefile.stdout -e logs_${DATE}/Snakefile.stderr -b y "module load python3 sge R/3.4.3 gcc zlib;snakemake -pr --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules/config.yaml --cluster \"$sbcmd\" --cluster-config cluster.yaml --latency-wait 120 all"
 
-sbatch --output=logs_${DATE}/run_snakefile_slurm.out --error=logs_${DATE}/run_snakefile_slurm.err logs_${DATE}/run_snakefile_slurm.sbatch
+sbatch --output=${proDir}/logs_${DATE}/run_snakefile_slurm_$(date +%y%m%d%s).out --error=${proDir}/logs_${DATE}/run_snakefile_slurm_$(date +%y%m%d%s).err ${proDir}/logs_${DATE}/run_snakefile_slurm.sbatch

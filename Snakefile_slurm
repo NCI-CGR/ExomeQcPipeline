@@ -122,7 +122,7 @@ else:
 #launch all rules    
 include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix'
 #include: 'modules_slurm/Snakefile_ancestry_plot_by_group'
-#include: 'modules_slurm/Snakefile_contamination_plot'
+include: 'modules_slurm/Snakefile_contamination_plot'
 include: 'modules_slurm/Snakefile_duplication_plot'
 include: 'modules_slurm/Snakefile_fastqc'   
     

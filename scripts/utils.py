@@ -24,7 +24,6 @@ def initializeConfigVariables(config: dict):
         for line in f:
             (group, analysisid) = [line.split(',')[i] for i in [6,12]] #with list index [6,11,12], it will throw error "list indices must be integers or slices, not tuple". Need to explicitly specify by the loop, because you cannot index list
             sample = group + "_" + analysisid
-            sample = analysisid
             if (sample not in SAMPLES):
                 SAMPLES.append(sample)
                 sampleGroupDict[sample] = group        

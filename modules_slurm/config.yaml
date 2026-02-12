@@ -1,6 +1,6 @@
 ##general required files
-project: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/QC #YOUR_OUTPUT_PATH_FOR_SOME_INTERMEDIATE_FILES
-manifest: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/Manifest/GIAB-CONTROLS-MANIFEST_07252017.csv
+project: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/QC2 #YOUR_OUTPUT_PATH_FOR_SOME_INTERMEDIATE_FILES
+manifest: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/Manifest/GIAB-CONTROLS-MANIFEST_07252017_exomeQCtest.csv
 bam_location: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/bam_location
 precalling_report: /DCEG/Projects/Exome/builds/build_germline_pipeline_V3_testing/QC/pre_calling_qc_report.txt
 
@@ -8,7 +8,7 @@ ref: /DCEG/CGF/Resources/Data/genome/hg19_canonical_correct_chr_order.fa  ##/DCE
 version: "hg19" #hg38
 
 #capturekit: /DCEG/CGF/Bioinformatics/Production/data/hg38/BedFiles/Homo_sapiens_assembly38.bed
-capturekit: /DCEG/Projects/Exome/SequencingData/BED_FILES/seqcap_EZ_Exome_v3_v3utr_intersect_correct.bed
+capturekit: /DCEG/Projects/Exome/SequencingData/BED_FILES/NimbleGen_V3UTR_V3_intersect_hg19/seqcap_EZ_Exome_v3_v3utr_intersect_correct.bed
 
 dataType: wes #wgs
 MODE: germline #germline, somatic, tumor_only
@@ -40,7 +40,7 @@ hg19:
   fastNGSiInd: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/nInd_1000genomesRefPanel.txt
   refPlink: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel
   refPlinkFam: /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/data1000genomes/1000genomesRefPanel.fam
-  omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.exome.vcf.gz
+  omniVcf: /DCEG/CGF/Bioinformatics/Production/Wen/git/VerifyBamID/resource/exome/1000g.phase3.10k.b37.chr.exome.vcf.gz
   bamMatcherVcf: /DCEG/CGF/Bioinformatics/Production/software/bam-matcher/1kg.exome.highAF.7550.vcf
 hg38:
   fastNGSsite: /DCEG/CGF/Bioinformatics/Production/Wen/20210208_hongkongbreast_wgs/ref_1000G/shapeit2_integrated_v1a.GRCh38.20181129.phased.plink_chr.sites

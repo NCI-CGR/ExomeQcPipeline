@@ -18,17 +18,17 @@ rule angsd:
     output:
         beagle = ancestry_check_dir + '/{sample}.beagle.gz',
         temp = temp(ancestry_check_dir + '/{sample}_temp.beagle.gz'),
-        temp2 = temp(ancestry_check_dir + '/{sample}.beagle')
+        #temp2 = temp(ancestry_check_dir + '/{sample}.beagle')
         #txt = outDir + 'fastNGSadmix/{sample}.qopt'
     params:
         refSite = config[version]['fastNGSsite'],
         prefix = ancestry_check_dir + '/{sample}_temp',
-        prefix2 = ancestry_check_dir + '/{sample}'
+        #prefix2 = ancestry_check_dir + '/{sample}'
     singularity: "docker://ohdzagenetics/angsd:latest"
     shell:
         #'. /etc/profile.d/modules.sh; module load angsd/0.935 tabix ;'
         'angsd -i {input} -GL 2 -sites {params.refSite} -doGlf 2 -doMajorMinor 3 -minMapQ 30 -minQ 20 -doDepth 1 -doCounts 1 -out {params.prefix};'
-        '''zcat {output.temp}| sed 's/^chr//g' > {output.temp2} && bgzip {output.temp2} ;'''
+        '''zcat {output.temp}| sed 's/^chr//g' | bgzip -c > {output.beagle} ;'''
 
 rule fastNGSadmix:
     input:

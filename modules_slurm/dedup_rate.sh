@@ -1,24 +1,25 @@
 #!/bin/sh
 . /etc/profile.d/modules.sh;
 #module load python/2.7.5 glu
+#set -euo pipefail
 
 MANIFEST=$1
 OUTDIR=$2
 
 NF=$(awk -F"," '{print NF}' $MANIFEST)
-rm ${OUTDIR}/lane_dup_rate_tmp.txt 2>/dev/null
+#rm ${OUTDIR}/lane_dup_rate_tmp.txt 2>/dev/null
 
 for i in $(awk -F"," '{if(NR>1){print $3"="$6"="$4"="$5"="$13}}' $MANIFEST); do 
 	FLOWCELL=$(echo $i | cut -d= -f1);CGFID=$(echo $i | cut -d= -f2); 
 	LANE=$(echo $i | cut -d= -f3);INDEX=$(echo $i | cut -d= -f4);
 	SUBJECT=$(echo $i | cut -d= -f5);
 	FLOWCELL_REPORT=$(find /DCEG/CGF/Sequencing/Illumina/*Seq/PostRun_Analysis/Reports/ /DCEG/CGF/Sequencing/Illumina/Reanalysis/*Seq/PostRun_Analysis/Reports/ -type f -name "*${FLOWCELL}*.txt" -print -quit )
-
+	#echo $FLOWCELL_REPORT
 	if [[ -f $FLOWCELL_REPORT ]]; then
-		DUP_RATE=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if($1==id && $2==index && $3==lane){print $13}}' $FLOWCELL_REPORT`; 
-		PCR_DUP_READS=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if($1==id && $2==index && $3==lane){print $9}}' $FLOWCELL_REPORT`;
-		OPTICAL_DUP_READS=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if$1==id && $2==index && ($3==lane){print $11}}' $FLOWCELL_REPORT`;
-		TOTAL_READS=`awk -F"\t" -v id=$CGFID -v index=$INDEX -v lane=$LANE '{if($1==id && $2==index && $3==lane){print $7}}' $FLOWCELL_REPORT`;
+		DUP_RATE=`awk -F"\t" -v id=$CGFID -v barcode=$INDEX -v lane=$LANE '{if($1==id && $2==barcode && $3==lane){print $13}}' $FLOWCELL_REPORT`; 
+		PCR_DUP_READS=`awk -F"\t" -v id=$CGFID -v barcode=$INDEX -v lane=$LANE '{if($1==id && $2==barcode && $3==lane){print $9}}' $FLOWCELL_REPORT`;
+		OPTICAL_DUP_READS=`awk -F"\t" -v id=$CGFID -v barcode=$INDEX -v lane=$LANE '{if($1==id && $2==barcode && $3==lane){print $11}}' $FLOWCELL_REPORT`;
+		TOTAL_READS=`awk -F"\t" -v id=$CGFID -v barcode=$INDEX -v lane=$LANE '{if($1==id && $2==barcode && $3==lane){print $7}}' $FLOWCELL_REPORT`;
 		DUP_READS=`echo "$PCR_DUP_READS + $OPTICAL_DUP_READS" | bc -l | xargs -I {} printf "%5.0f" {}`
 	else
 	#set the sample with no flowcell report found to be 0 at the moment
@@ -44,8 +45,9 @@ for i in `awk -F"\t" '{print $1}' ${OUTDIR}/lane_dup_rate.txt | sort | uniq`; do
 	PRIMARY_DUPLICATE_READS=`awk -F"\t" -v name="${i}" '{if($1==name){print}}' ${OUTDIR}/lane_dup_reads.txt | awk '{sum=0; for (i=2;i<=NF;i++) sum+=$i; print sum}'`; 
 	#get the most recent secondary log
 	DEDUP_LOG=$(find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ \( -name "step2_gatk_build_bam_for_single_name_v4_${i}.log" -o -name "_build_bam_*${i}*.stderr" \) -print0 | xargs -r -0 ls -1 -t | head -1)
+	#echo $DEDUP_LOG
 	if [[ -f ${DEDUP_LOG} ]]; then
-	    SECONDARY_DUPLICATE_READS=`find /DCEG/Projects/Exome/SequencingData/variant_scripts/logs/GATK/ -name "_build_bam_*${i}*.stderr" -print0 | xargs -0 grep "records as duplicates" | head -1 |cut -d" " -f3` # grep the duplicate record for all find output and use the top one.
+	    SECONDARY_DUPLICATE_READS=`grep "records as duplicates" $DEDUP_LOG | head -1 |cut -d" " -f3` # grep the duplicate record for all find output and use the top one.
 	else
 		SECONDARY_DUPLICATE_READS=0
 	fi

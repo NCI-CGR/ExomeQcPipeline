@@ -14,9 +14,12 @@ sbcmd="sbatch --time=24:00:00 --mem=64g --partition=bigmemq,cgrq --cpus-per-task
 
 #qsub -cwd -q seq-calling.q -N run_Snakefile_no_report  -o logs_${DATE}/Snakefile_no_report.stdout -e logs_${DATE}/Snakefile_no_report.stderr -b y "module load python3 sge R/3.4.0 gcc zlib;snakemake -pr -s Snakefile_no_report --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules/config.yaml --cluster \"$sbcmd\" --cluster-config cluster.yaml --latency-wait 120 all"
 
+#echo "PACKAGE_VERSION={{version}}"
 echo "#!/bin/sh" > ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
 
-echo "module load python3/3.10.2 singularity slurm R; snakemake -pr -s Snakefile_no_report_slurm --use-singularity --singularity-args \"--bind /DCEG,/scratch\" --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules_slurm/config.yaml --cluster \"$sbcmd\" --cluster-config cluster_slurm.yaml --latency-wait 120" >> ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
+echo "module load python3/3.10.2 singularity slurm R" >> ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
+echo "python print_version.py" >> ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
+echo "snakemake -pr -s Snakefile_no_report_slurm --use-singularity --singularity-args \"--bind /DCEG,/scratch\" --keep-going --rerun-incomplete --local-cores 1 --jobs 1000 --configfile modules_slurm/config.yaml --cluster \"$sbcmd\" --cluster-config cluster_slurm.yaml --latency-wait 120" >> ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
 
-sbatch --time=24:00:00 --output=${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.out --error=${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.err ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
+sbatch --time=24:00:00 --output=${proDir}/logs_${DATE}/run_snakefile_no_report_slurm_$(date +%y%m%d%s).out --error=${proDir}/logs_${DATE}/run_snakefile_no_report_slurm_$(date +%y%m%d%s).err ${proDir}/logs_${DATE}/run_snakefile_no_report_slurm.sbatch
 
