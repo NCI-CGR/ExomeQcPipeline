@@ -16,7 +16,7 @@ colnames(dat)=c("CHROM","MISSING_RATE")
 
 dat2 <- read.table(file.path(path, "GT.txt"), header=TRUE, sep="\t")
 
-jpeg(filename = file.path(path, "callRate_bychr.jpeg"), width = 1000, height = 480, units = "px",bg ="white")
+jpeg(filename = file.path(path, "callRate_bychr.jpeg"), width = 1000, height = 480, units = "px",bg ="white", type = "cairo")
 
 ggplot(dat, aes(x=CHROM, y=MISSING_RATE)) +
 geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
@@ -52,7 +52,7 @@ callRateSamp$group = unlist(li)
 
 colnames(callRateSamp)=c("MISSING_RATE","GROUP")
 
-jpeg(filename = file.path(path, "callRate_byGroup.jpeg"))
+jpeg(filename = file.path(path, "callRate_byGroup.jpeg"), type = "cairo")
 
 ggplot(callRateSamp, aes(x=GROUP, y=MISSING_RATE)) +
 geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "ExomeQcPipeline"
+version = "2.0.0"
+description = "The CGR Sequencing QC Pipeline"
+authors = ["Wen Luo <wen.luo@nih.gov>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+snakemake = "^6.0.0"
+requests = "^2.28"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
+black = "^24.0"
