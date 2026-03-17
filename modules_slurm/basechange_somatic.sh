@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 OUT_TXT=$1
 shift

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 REPORT=$1
 #DIR=/CGF/Bioinformatics/Production/Wen/20180911_snakemake_coverage_tools/ExomeQcPipeline

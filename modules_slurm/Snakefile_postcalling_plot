@@ -87,7 +87,7 @@ if sampleCount > 50:
             '''
             module load bcftools R;
             awk '{{if($3<0.05 && $4<-0.1 && $1=="Samples"){{print $2}}}}' {input.pca} > {params}; 
-            sh modules_slurm/PCA.sh {input.vcf} {params}; 
+            ./modules_slurm/PCA.sh {input.vcf} {params}; 
             '''
 
 #switch from glu util.table to P dplyr
@@ -103,7 +103,7 @@ rule postcalling_qc_table:
 #        tmp = postcalling_qc_dir + '/titv_tmp.txt'
     shell:
 #        '. /etc/profile.d/modules.sh; module load python/2.7.5 glu;'
-        'sh ./modules_slurm/post_calling_table.sh {input} {params.outdir};'
+        './modules_slurm/post_calling_table.sh {input} {params.outdir};'
 #        'glu util.join -1 SAMPLE -2 ANALYSISID -j inner {output.variant} {params.cov_report} -o {params.tmp}:c=SAMPLE,TOTAL,TI,TV,RATIO,CACO,COV; mv {params.tmp} {output.variant}'
 
 
@@ -259,6 +259,6 @@ rule call_rate_plot:
         dir = postcalling_qc_dir
     shell:   
         '''
-        . /etc/profile.d/modules.sh; module load R;
+        . /etc/profile.d/modules.sh; module load R/4.4.1;
         Rscript {params.script} {params.dir}
         '''        

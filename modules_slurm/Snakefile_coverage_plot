@@ -91,7 +91,7 @@ rule final_table:
     params:
         coverage_dir
     shell:
-        'sh ./modules_slurm/coverage_merge.sh {input.Manifest} {input.input} {params}'
+        './modules_slurm/coverage_merge.sh {input.Manifest} {input.input} {params}'
      
 rule average_depth_plot:
     input:

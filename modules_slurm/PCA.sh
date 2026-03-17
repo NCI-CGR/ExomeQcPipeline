@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 . /etc/profile.d/modules.sh
 module load R plink/2.0 bcftools tabix
 

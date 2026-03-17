@@ -82,7 +82,7 @@ rule doProcastesPCA:
         ref = config['refPlinkFam'],
         dir = ancestry_check_dir
     shell:
-        '. /etc/profile.d/modules.sh; module load R;'    
+        '. /etc/profile.d/modules.sh; module load R/4.4.1;'    
         'Rscript /CGF/Bioinformatics/Production/software/fastNGSadmix/R/doProcastesPCA.R {params.dir} {params.ref} {input.list} Samples;'
         'mv procrustesPCASamples_* {params.dir}'        
     

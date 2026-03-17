@@ -42,7 +42,7 @@ rule fastNGSadmix:
     benchmark:
         ancestry_check_dir + '/benchmark/fastNGSadmix_{sample}.txt'
     shell:
-        'module load R;'   
+        #'module load R;'   
         '/DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/fastNGSadmix -likes {input.beagle} -fname {params.refPanel} -Nname {params.refInd} -out {params.prefix} -whichPops CEU,CHB,YRI,PEL'
 
 rule fastNGSadmixPCA:
@@ -60,7 +60,7 @@ rule fastNGSadmixPCA:
         ref = config[version]['refPlink'],
         prefix = ancestry_check_dir + '/{sample}'
     shell:
-        'module load R;'    
+        #'module load R;'    
         'Rscript /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/R/fastNGSadmixPCA.R -likes {input.beagle} -qopt {input.qopt} -out {params.prefix} -ref {params.ref};'
 
 rule listProcastes:
@@ -87,7 +87,7 @@ rule doProcastesPCA:
         ref = config[version]['refPlinkFam'],
         dir = ancestry_check_dir
     shell:
-        'module load R;'    
+        #'module load R;'    
         'Rscript /DCEG/CGF/Bioinformatics/Production/software/fastNGSadmix/R/doProcastesPCA.R {params.dir} {params.ref} {input.list} Samples;'
         'mv procrustesPCASamples_* {params.dir}'        
     

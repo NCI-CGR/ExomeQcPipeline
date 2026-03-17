@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 . /etc/profile.d/modules.sh;
 #module load python/2.7.5 glu
 #set -euo pipefail

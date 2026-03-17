@@ -27,6 +27,6 @@ else:
             bed = '--regions-file ' + bedFile if (config['dataType'] == 'wes') else []
         threads: 10    
         shell:
-            '. /etc/profile.d/modules.sh; module load bcftools tabix;'
+            '. /etc/profile.d/modules.sh; module load bcftools samtools;'
             #'''cat {input} | java -Xmx16g -jar /DCEG/CGF/Bioinformatics/Analysis/public_v2/snpEff/SnpSift.jar filter "( ( FILTER =~ '2') | ( FILTER =~ '3') )" | java -Xmx16g -jar /DCEG/CGF/Bioinformatics/Analysis/public_v2/snpEff/SnpSift.jar intervals {params.bed} > {params.vcf};'''
             'bcftools view {params.bed} -f threeCallers,twoCallers -Oz -o {output.vcf} {input}; tabix -p vcf {output.vcf}'
