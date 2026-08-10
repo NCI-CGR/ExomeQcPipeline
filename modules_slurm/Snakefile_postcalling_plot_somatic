@@ -32,7 +32,7 @@ rule run_basechange:
         basechange = postcalling_qc_dir + '/ensemble_basechange.txt',
         vaf = postcalling_qc_dir + '/ensemble_vaf_dp.txt'        
     shell:
-        'sh ./modules_slurm/basechange_somatic.sh {output.basechange} {output.vaf} {input}'
+        'bash ./modules_slurm/basechange_somatic.sh {output.basechange} {output.vaf} {input}'
         
 rule basechange_plot:
     input:

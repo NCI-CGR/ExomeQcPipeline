@@ -238,7 +238,7 @@ rule run_bcftoolsGT:
         postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz'
     output:
         rateByChr = postcalling_qc_dir + '/callRate_bychr.txt',
-        gt = postcalling_qc_dir + '/GT.txt'
+        gt = temp(postcalling_qc_dir + '/GT.txt')
     shell:
         '''
         . /etc/profile.d/modules.sh; module load bcftools;

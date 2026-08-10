@@ -25,7 +25,7 @@ rule deduplication_table:
     params:
         deduplication_dir
     shell:
-        'sh ./modules_slurm/dedup_rate.sh {input} {params}'
+        'bash ./modules_slurm/dedup_rate.sh {input} {params}'
 
 rule deduplication_plot:
     input:

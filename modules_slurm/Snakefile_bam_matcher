@@ -5,7 +5,7 @@ import os
 from glob import iglob
 
 pair_manifest = config['pairs']
-bamMatcher_dir = 'bamMatcher'
+bamMatcher_dir = project + '/bamMatcher'
 bamMatcherExe = config['BamMatcher']
 bamMatcherVCF = config[version]['bamMatcherVcf']
 
@@ -47,9 +47,11 @@ rule run_bam_matcher:
         ref = refFile,
         vcf = bamMatcherVCF,
         cache = bamMatcher_dir + '/{sample}/'
+    log:
+        bamMatcher_dir + '/{sample}/bam_matcher_{sample}.log'
     shell:
-        #'. /etc/profile.d/modules.sh; module load python;'
-        'python {params.exe} --bam1 {input.tumorBam} --bam2 {input.normalBam} --output {output} --reference {params.ref} --vcf {params.vcf} --cache-dir {params.cache}'        
+        '. /etc/profile.d/modules.sh; module unload R/4.5.2;'
+        'python {params.exe} --bam1 {input.tumorBam} --bam2 {input.normalBam} --output {output} --reference {params.ref} --vcf {params.vcf} --cache-dir {params.cache} > {log} 2>&1'        
     
 rule summary_bam_matcher:
     input: 
@@ -77,6 +79,7 @@ rule bammatcher_plot:
         Rout = bamMatcher_dir + '/bam_matcher_check.R.out'
     run:
         rTxt = '''
+        options(bitmapType='cairo')
         data <- read.table("''' + str(input) + '''", header = TRUE, sep = "\t")
         png("''' + str(output.png_bammatcher) + '''", 6.5, 6.5, "in", res = 300)
         plot(data$RATE,data$SITE, xlab="Fraction of site with common genotype", ylab="Checking site number", pch=19, xlim=c(0.3,1)) 

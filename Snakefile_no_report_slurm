@@ -42,32 +42,32 @@ fastqc_dir = project + '/fastqc'
 CONTROLS = ['PLCO', 'ACS', 'LC_IGC', 'EAGLE_IGC', 'CTRL', '_Normal', '_Germline']
 sampleCount=len(SAMPLES)
 
-# ########################
-# #Germline call
+########################
+#Germline call
 
-# with open(manifest) as f:
-    # next(f)
-    # for line in f:
-        # (group, analysisid) = [line.split(',')[i] for i in [6,12]] #with list index [6,11,12], it will throw error "list indices must be integers or slices, not tuple". Need to explicitly specify by the loop, because you cannot index list
-        # sample = group + "_" + analysisid
-        # if (sample not in SAMPLES):
-            # SAMPLES.append(sample)
-            # sampleGroupDict[sample] = group        
-            # if group not in GROUPS:            
-                # GROUPS.append(group)	
+with open(manifest) as f:
+    next(f)
+    for line in f:
+        (group, analysisid) = [line.split(',')[i] for i in [6,12]] #with list index [6,11,12], it will throw error "list indices must be integers or slices, not tuple". Need to explicitly specify by the loop, because you cannot index list
+        sample = group + "_" + analysisid
+        if (sample not in SAMPLES):
+            SAMPLES.append(sample)
+            sampleGroupDict[sample] = group        
+            if group not in GROUPS:            
+                GROUPS.append(group)	
                 
-# def getBam(wildcards):
-    # (group) = sampleGroupDict[wildcards.sample]
-    # return (glob(bam_location + '/' + group + '/' + wildcards.sample + '.bam')) #Why have to use glob instead of using the string
+def getBam(wildcards):
+    (group) = sampleGroupDict[wildcards.sample]
+    return (glob(bam_location + '/' + group + '/' + wildcards.sample + '.bam')) #Why have to use glob instead of using the string
 
-# #print(GROUPS)
+#print(GROUPS)
 
-# def getReport(wildcards):
-    # return glob(project + '/*coverage_report*.txt')
+def getReport(wildcards):
+    return glob(project + '/*coverage_report*.txt')
 	
 	
-#for bam_subdir in glob(bam_location + '/*/'):
-#    GROUPS.append(os.path.basename(bam_subdir.strip('/')))
+for bam_subdir in glob(bam_location + '/*/'):
+   GROUPS.append(os.path.basename(bam_subdir.strip('/')))
 
 include: 'modules_slurm/Snakefile_ancestry_plot_fastNGSadmix' 
 include: 'modules_slurm/Snakefile_contamination_plot'
@@ -81,7 +81,7 @@ include: 'modules_slurm/Snakefile_pre_calling_plot'
 
 if config['MODE'] == 'somatic': 
     pair_manifest = config['pairs']
-    bamMatcher_dir = 'bamMatcher'
+    bamMatcher_dir = project + '/bamMatcher'
     bamMatcherExe = config['BamMatcher']
     
     PAIRS = []
@@ -116,7 +116,7 @@ if config['MODE'] == 'somatic':
         
 elif config['MODE'] == 'tumor_only':
     
-    include: 'modules_slurm/Snakefile_coverage_plot'
+    #include: 'modules_slurm/Snakefile_coverage_plot'
     if config['post_calling_check']:  
         ensemble_dir = config['ensemble_dir']
         include: "modules_slurm/Snakemake_utils"

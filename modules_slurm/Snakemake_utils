@@ -21,8 +21,8 @@ else:
         input:
             ensemble_vcf
         output:
-            vcf = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz',
-            index = postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz.tbi'
+            vcf = temp(postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz'),
+            index = temp(postcalling_qc_dir + '/variants_annotated_majority_intersect.vcf.gz.tbi)'
         params:    
             bed = '--regions-file ' + bedFile if (config['dataType'] == 'wes') else []
         threads: 10    

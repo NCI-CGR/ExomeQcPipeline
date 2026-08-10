@@ -25,7 +25,7 @@ rule XYratio_single:
     output:
         project + '/sex_concordance_check/intermediate_files/counts/{sample}_X_Y_COUNTS.txt' 
     shell:
-        'module load samtools;'
+        '. /etc/profile.d/modules.sh;module load samtools;'
         'Xcount=$(samtools view -c {input} chrX );'
         'Ycount=$(samtools view -c {input} chrY );'
         'echo -e "{wildcards.sample}\t${{Xcount}}\t${{Ycount}}" > {output}'
